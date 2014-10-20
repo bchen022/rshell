@@ -26,7 +26,6 @@ int main() {
 		cout << "Entered the child process." << endl;
 
 		while(1) {
-			string commands;
 			string userid = getlogin();
 			if (NULL == getlogin()) {
 				perror("Getlogin() could not retreive a username.");
@@ -38,24 +37,25 @@ int main() {
 			
 			cout << userid << "@" << hostname << "$ ";
 
-			
-			getline(cin, commands);									//get user input
+			string commands;	
+			getline(cin, commands);														//get user input
 
 			char* saveptr1;
 			char* saveptr2;
-			char* c_commands = new char [commands.length() + 1];	//create a c-string for strtok's argument/parameter
-			strcpy(c_commands, commands.c_str());					//fill in the c-string with user input
-			char* argv_tok = strtok_r(c_commands,";", &saveptr1);			//parse the c-string(user input)
+			char* c_commands = new char [commands.length() + 1];					//create a c-string for strtok's argument
+			strcpy(c_commands, commands.c_str());									//fill in the c-string with user input
+			for (int cmtfind = 0; cmtfind < strlen(c_commands); ++cmtfind) {
+				if (c_commands[cmtfind] == '#') {
+					c_commands[cmtfind] = '\0';
+				}
+			}
+		
+			char* argv_tok = strtok_r(c_commands,";", &saveptr1);					//parse the c-string(user input)
 		
 			vector<char*> argv_vect;
 			vector<char*> argv_vect2;
-		
 			int i = 0;
-			while (argv_tok != NULL) {								//fill vector with parsed user input
-			//	if (*argv_tok == "exit") {
-			//		cout << "user inputted exit. " << endl;
-			//		exit(1);
-			//	}
+			while (argv_tok != NULL) {												//fill vectors with parsed user input
 				argv_vect.push_back(argv_tok);
 				char* argv_tok2 = strtok_r(argv_vect.at(i), " ", &saveptr2);
 				while (argv_tok2 != NULL) {
@@ -70,11 +70,14 @@ int main() {
 					strcpy(argv[j], argv_vect2.at(j));									//enough space for cstring commands
 				}
 				argv[argv_vect2.size()] = NULL;
-				
+			
+
+				string exitor = "exit";
+				string exitor2 = " exit";
 				for (int m = 0; m < argv_vect.size(); ++m) {
-					cout << "CONTENTS of argv_vect1: " << argv_vect.at(m) << endl;
-					if (argv_vect.at(m) == " exit" || argv_vect.at(m) == "exit") {
-						cout << "entered the exit." << endl;
+					int exit_comp = strcmp(argv_vect.at(m), exitor.c_str());
+					int exit_comp2 = strcmp(argv_vect.at(m), exitor2.c_str());
+					if (exit_comp == 0 || exit_comp2 == 0) {
 						exit(1);
 					}
 				}
@@ -101,9 +104,9 @@ int main() {
 				argv_vect2.clear();
 			}
 
-			for (int z = 0; z < argv_vect.size(); ++ z) {
+			/*for (int z = 0; z < argv_vect.size(); ++ z) {
 				cout << "contents of argv_vect1: " << argv_vect.at(z) << endl;
-			}
+			}*/
 		
 		}
 		
