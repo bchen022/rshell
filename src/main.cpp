@@ -39,11 +39,7 @@ int main() {
 			cout << userid << "@" << hostname << "$ ";
 
 			
-			//vector<vector<string>> true_argv_vect;
 			getline(cin, commands);									//get user input
-			if (commands == "exit") {
-				exit(1);	
-			}
 
 			char* saveptr1;
 			char* saveptr2;
@@ -55,26 +51,34 @@ int main() {
 			vector<char*> argv_vect2;
 		
 			int i = 0;
-			//	cout << "argv_tok before: " << argv_tok << endl;
 			while (argv_tok != NULL) {								//fill vector with parsed user input
+			//	if (*argv_tok == "exit") {
+			//		cout << "user inputted exit. " << endl;
+			//		exit(1);
+			//	}
 				argv_vect.push_back(argv_tok);
 				char* argv_tok2 = strtok_r(argv_vect.at(i), " ", &saveptr2);
 				while (argv_tok2 != NULL) {
 					argv_vect2.push_back(argv_tok2);
 					argv_tok2 = strtok_r(NULL, " ", &saveptr2);
 				}
-				
-				//cout << "argv_tok again: " << argv_tok << endl;
 
 				int command_sz = argv_vect2.size();
 				char** argv = new char*[command_sz + 1]; 								//create argv for execvp
 				for (int j = 0; j < argv_vect2.size(); ++j) {
 					argv[j] = new char[sizeof(argv_vect2.at(j)) + 1];					//filling in each index of argv with
 					strcpy(argv[j], argv_vect2.at(j));									//enough space for cstring commands
-					//cout << "contents of argv: " << argv[j] << endl;
 				}
 				argv[argv_vect2.size()] = NULL;
-
+				
+				for (int m = 0; m < argv_vect.size(); ++m) {
+					cout << "CONTENTS of argv_vect1: " << argv_vect.at(m) << endl;
+					if (argv_vect.at(m) == " exit" || argv_vect.at(m) == "exit") {
+						cout << "entered the exit." << endl;
+						exit(1);
+					}
+				}
+			
 				int pid2 = fork();
 				if (pid2 == -1) {
 					perror("Unable to fork for execvp.");
@@ -92,56 +96,18 @@ int main() {
 				}
 				
 				argv_tok = strtok_r(NULL, ";", &saveptr1);
+
 				++i;
-			//	cout << "end of line:"; 
-			//	cout << argv_tok << "|test|" << endl;
-				//	argv_vect.clear();
 				argv_vect2.clear();
-				/*for (int k = 0; k < argv_vect.size(); ++k ) {
-					cout << "contents of parsed vector: " << argv_vect.at(k) << endl;
-				}
-				
-				for (int l = 0; l < argv_vect2.size(); ++l) {
-					cout << "contents of parsed vector 2: " << argv_vect2.at(l) << endl;	//verifying the parse has worked
-				}*/
+			}
+
+			for (int z = 0; z < argv_vect.size(); ++ z) {
+				cout << "contents of argv_vect1: " << argv_vect.at(z) << endl;
 			}
 		
-			/*for (int i = 0; i < argv_vect.size(); ++i) {
-				cout << "contents of parsed vector: " << argv_vect.at(i) << endl;	//verifying the parse has worked
-			}*/
-
-			/*for (int i = 0; i < argv_vect.size(); ++i) {
-				char* argv_tok2 = strtok(argv_vect.at(i), " ");
-				while (argv_tok2 != NULL) {
-					argv_vect2.push_back(argv_tok2);
-					argv_tok2 = strtok(NULL, " ");				
-				}
-			}
-			*/
-		
-
-
-			/*int pid2 = fork();
-
-			if (pid2 == -1) {
-				perror("Second fork did not work");
-			}
-
-			if (pid2 == 0) {
-				if (-1 == execvp(argv[0], argv)) {
-					perror("There was an error in execvp. ");
-					exit(1);
-				}
-			}
-
-			if (pid2 > 0) {
-				if (-1 == wait(0)) {
-					perror("Waiting for 2nd child process to end.");
-				}
-
-			}*/
-			exit(1);
 		}
+		
+
 	}
 
 	else if (pid > 0) {
@@ -151,3 +117,13 @@ int main() {
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
