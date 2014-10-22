@@ -66,7 +66,7 @@ However, there are bugs in this program:
 
 10) After running rshell within itself 6 times, resources will become temporarily unavailable.
 
-
+11) Unknown error at the end of script of infinite loop. Did not encounter until running script.
 
 
 
