@@ -111,36 +111,29 @@ int main() {
 				if (-1 == execvp(argv[0], argv)) {
 					perror("There was an error in execvp. ");
 					if (and_flag > 0) {
-						argv_vect2.clear();
-						argv = '\0';
-						cout << "A" << endl;
+//						cout << "A" << endl;
 						status = 3;
 						break;
 					}
 					if (or_flag > 0) {
-						cout << "B" << endl;
-		//				argv_vect.clear();
+//						cout << "B" << endl;
 						status = 3;
-		//				exit(1);
 						break;
 					}
 					exit(1);
 				}
 				else { 
 					if (or_flag > 0) {
-						cout << "C" << endl;
-//						argv_vect.clear();
+//						cout << "C" << endl;
 						status = 3;
 						break;
 					}
 				}
 			}
-			else if (pid2 > 0) {
+			else if (pid2 != 0) {
 				
 				if (WEXITSTATUS(status) == 0 && or_flag > 0) {
-					cout << "D" << endl;
-		//			argv_vect.clear();
-	//				exit(1);
+//					cout << "D" << endl;
 					break;
 				}
 
@@ -149,7 +142,6 @@ int main() {
 				}
 			}
 
-			cout << "KSJDHFKSDFH" << endl;
 			argv_tok = strtok_r(NULL, delim_list, &saveptr1);
 			++i;
 			argv_vect2.clear();
