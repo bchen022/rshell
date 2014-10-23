@@ -12,6 +12,7 @@ main.cpp
 
 /test: 
 -----------
+exec.script (not updated yet after getting rshell up to the assignment specs)
 
 How to run file
 ---------------
@@ -63,17 +64,4 @@ However, there are bugs in this program:
 8) Commands with single connectors (|, &) will run both commands that are connected.
 
 9) Arrow keys will not work within the shell.
-
-11) Unknown error at the end of script of infinite loop. Did not encounter until running script.
-
-
-
-
-
-
-
-
-
-
-
 
