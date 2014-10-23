@@ -56,21 +56,22 @@ int main() {
 		char delim_list[] = ";||&&";
 		char* argv_tok = strtok_r(c_commands, delim_list, &saveptr1);					//parse the c-string(user input)
 
-//		vector<char*> argv_vect;
+		vector<char*> argv_vect;
 		vector<char*> argv_vect2;
 		int i = 0;
 		while (argv_tok != NULL) {													//fill vectors with parsed user input
-			string temp_tok = argv_tok;
+/*			string temp_tok = argv_tok;
 			char* replace = new char[temp_tok.size() + 1];
 			strcpy(replace, temp_tok.c_str());
-/*			argv_vect.push_back(argv_tok);
-			if (argv_vect.size() > 0) {
+*/
+			argv_vect.push_back(argv_tok);
+/*			if (argv_vect.size() > 0) {
 				for (unsigned argv_ctr = 0; argv_ctr < argv_vect.size(); ++argv_ctr) {
 					cout << "contents of argv_vect1: " << argv_vect.at(argv_ctr) << endl;
 				}
 			}
 */			
-			char* argv_tok2 = strtok_r(replace, " " , &saveptr2);
+			char* argv_tok2 = strtok_r(argv_vect.at(i), " " , &saveptr2);
 			while (argv_tok2 != NULL) {
 				argv_vect2.push_back(argv_tok2);
 				argv_tok2 = strtok_r(NULL, " ", &saveptr2);
@@ -85,7 +86,7 @@ int main() {
 				int exit_comp = strcmp(argv_vect2.at(j), exitor.c_str());
 				int exit_comp2 = strcmp(argv_vect2.at(j), exitor2.c_str());
 				if (exit_comp == 0 || exit_comp2 == 0) {
-	//				cout << "exited" << endl;
+//					cout << "exited" << endl;
 					exit(1);
 				}
 				
@@ -113,12 +114,13 @@ int main() {
 					if (and_flag > 0) {
 //						cout << "A" << endl;
 						status = 3;
-						break;
+//						break;
+						exit(1);
 					}
 					if (or_flag > 0) {
 //						cout << "B" << endl;
 						status = 3;
-						break;
+//						break;
 					}
 					exit(1);
 				}
@@ -131,20 +133,34 @@ int main() {
 				}
 			}
 			else if (pid2 != 0) {
+				if (-1 == wait(&status)) {
+					perror("Still waiting for child execvp process to end.");
+				}
+			
+//				cout << "status " << status << endl;
+				if (WEXITSTATUS(status)!= 0 && and_flag == 1)
+				{
+//					cout << "quit please" << endl;
+//					exit(1);
+					break;	
+				}
 				
 				if (WEXITSTATUS(status) == 0 && or_flag > 0) {
 //					cout << "D" << endl;
 					break;
 				}
 
-				if (-1 == wait(&status)) {
-					perror("Still waiting for child execvp process to end.");
+				
+
+				else {
+//					cout << "F" << endl;
+					argv_tok = strtok_r(NULL, delim_list, &saveptr1);
+					++i;
+					argv_vect2.clear();
 				}
+				
 			}
 
-			argv_tok = strtok_r(NULL, delim_list, &saveptr1);
-			++i;
-			argv_vect2.clear();
 		}
 	}
 }
