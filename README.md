@@ -46,25 +46,23 @@ be able to execute. It is able to accept multiple commands at once.
 
 However, there are bugs in this program:
 
-1) The exit command will be "backtracked" per every error from execvp. If execvp fails 2 times, exit will have to be commanded 3 times to fully exit out of the program.
+1) The command prompt does not handle commands of pure connectors. Rather than an error message being printed, the program will just reprompt the user.
 
-2) The || connectors do not function correctly. In the case of a success || sucess2, success2 will not run as expected but the program will reprompt the user for commands incorrectly.
+2) In the script, getlogin for the userid will not work properly.
 
-3) In the case of a fail || success, success does not run.
+3) If echo-ing with quotation marks, the quotation marks are not removed. If commanded to echo "Hello", "Hello" will be printed rather than Hello.
 
-4) The command prompt does not handle commands of pure connectors. Rather than an error message being printed, the program will just reprompt the user.
+4) If echo-ing with a '#', the user input will not echo anything pass the '#'. If commanded to echo he#llo, only he will be printed.
 
-5) In the script, getlogin for the userid will not work properly.
+5) git functions will not work.
 
-6) If echo-ing with quotation marks, the quotation marks are not removed. If commanded to echo "Hello", "Hello" will be printed rather than Hello.
+6) cd will not work since it is a part of the bash.
 
-7) If echo-ing with a '#', the user input will not echo anything pass the '#'. If commanded to echo he#llo, only he will be printed.
+7) After running rshell within itself multiple times, resources will become temporarily unavailable.
 
-8) git functions will not work.
+8) Commands with single connectors (|, &) will run both commands that are connected.
 
-9) cd will not work since it is a part of the bash.
-
-10) After running rshell within itself 6 times, resources will become temporarily unavailable.
+9) Arrow keys will not work within the shell.
 
 
 
