@@ -37,14 +37,34 @@ int main(int argc, char* argv[]) {
 
 	}
 
+	if (directories.size() == 0) {
+		directory.push_back('.');
+	}
+
+	else {
 
 	char *dirName = ".";
-	DIR *dirp = opendir(dirName)
+	DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
+	if (dirp == NULL) {
+		perror("Could not open directory stream.");
+	}
 	dirent *direntp;								
-	while ((direntp = readdir(dirp)))	{ //readdir returns a pointer to the next directory 
-										  //(which is a dirent struct that is pointed to by dirp)
+	while ((direntp = readdir(dirp)))	{ //readdir returns a pointer to the next directory from the directory stream
+										  //(which is a dirent struct that is pointed to by dirp) //direntp points to next directory
 		
 		cout << direntp->d_name << endl; // use stat here to find attributes of file
+										 // int stat(const char* path, struct stat* buf) 
+										 // stats the file pointed to by path and fills in buf with a ptr to the stat file
+	
+		struct stat stat_file;
+		if (-1 == stat(direntp->dname, &stat_file)) {
+			perror("Could not stat the directory.");
+		}
+		else {
+			
+		}
+		
+
 	}
 	closedir(dirp);
 }
