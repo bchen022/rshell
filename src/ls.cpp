@@ -7,6 +7,7 @@
 #include <string>
 #include <unistd.h>			// stat
 #include <sys/stat.h>		// stat
+#include <cstdlib>
 using namespace std;
 
 /* This is a BARE BONES example of how to use opendir/readdir/closedir. Notice
@@ -63,7 +64,95 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	struct stat statbuf;
+	while (!directories.empty()) {
+		string current_dir = directories.back();
+		if (-1 == stat(current_dir.c_str(), &statbuf)) {
+			perror("Could not stat the directory.");
+			exit(1);
+		}
+	
+		if (l_flag > 0) {
+			if (S_ISDIR(statbuf.st_mode)) {
+				cout << "d";
+			}//
+			else {
+				cout << "-";
+			}
+		
+			if (S_IRUSR & statbuf.st_mode) {
+				cout << "r";	
+			}
+			else {
+				cout << "-";
+			}
 
+			if(S_IWUSR & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";	
+			}
+
+			if(S_IXUSR & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IRGRP & statbuf.st_mode) {
+				cout << "r";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IWGRP & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IXGRP & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IROTH & statbuf.st_mode) {
+				cout << "r";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IWOTH & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IXOTH & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			cout << " " << statbuf.st_nlink << " " << statbuf.st_uid << " " << statbuf.st_gid << " ";
+			cout << statbuf.st_size << " ";
+			
+
+
+
+		}	
+		
+	}
+	
 	
 
 /*
