@@ -65,6 +65,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	struct stat statbuf;
+	//what if there is not directory argument (ls -l)
+	//this lists the directory but its supposed to GO INTO the dir and list its contents
 	while (!directories.empty()) {
 		string current_dir = directories.back();
 		if (-1 == stat(current_dir.c_str(), &statbuf)) {
@@ -144,12 +146,14 @@ int main(int argc, char* argv[]) {
 			}
 
 			cout << " " << statbuf.st_nlink << " " << statbuf.st_uid << " " << statbuf.st_gid << " ";
-			cout << statbuf.st_size << " ";
+			cout << statbuf.st_size << " " << statbuf.st_mtime << endl;
+		}
+
+		else {
+			
 			
 
-
-
-		}	
+		}
 		
 	}
 	
