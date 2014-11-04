@@ -8,6 +8,10 @@
 #include <unistd.h>			// stat
 #include <sys/stat.h>		// stat
 #include <cstdlib>
+#include <pwd.h>			//userid
+#include <grp.h>			//groupid
+#include <time.h>			//time id
+
 using namespace std;
 
 /* This is a BARE BONES example of how to use opendir/readdir/closedir. Notice
@@ -30,11 +34,13 @@ int main(int argc, char* argv[]) {
 
 	for (unsigned i = 1; i < arg_list.size(); ++i) {			//distinguish between directories and arguments
 		if (arg_list.at(i).at(0) != '-') { 
+			cout << "x" << endl;
 			string adirectory = arg_list.at(i);
 			directories.push_back(adirectory);
 		}
 		
 		else if (arg_list.at(i).at(0) == '-') {
+			cout << "y" << endl;
 			string anargument = arg_list.at(i);
 			user_arg.push_back(anargument);
 		}
@@ -65,7 +71,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	struct stat statbuf;
-	//what if there is not directory argument (ls -l)
+	//what if there is no directory argument (ls -l)
 	//this lists the directory but its supposed to GO INTO the dir and list its contents
 	while (!directories.empty()) {
 		string current_dir = directories.back();
@@ -145,8 +151,36 @@ int main(int argc, char* argv[]) {
 				cout << "-";
 			}
 
-			cout << " " << statbuf.st_nlink << " " << statbuf.st_uid << " " << statbuf.st_gid << " ";
-			cout << statbuf.st_size << " " << statbuf.st_mtime << endl;
+			cout << " " << statbuf.st_nlink << " ";
+			struct passwd *pw;
+			if ((pw = getpwuid(statbuf.st_uid)) != NULL) {
+				cout << pw->pw_name << " ";
+			}
+			else {
+				perror("Unable to retreive user id.");
+			}
+			struct group *gr;
+			if ((gr = getgrgid(statbuf.st_gid)) != NULL) {
+				cout << gr->gr_name << " ";
+			}
+			else {
+				perror("Unable to retreive group id.");
+			}
+			
+			cout << statbuf.st_size << " ";
+			
+			struct tm* timeinfo;
+			char time_buffer [128];
+			time(&statbuf.st_mtime);
+			time_display = localtime(&statbuf.st_mtime);
+			if (strftime(time_buffer, 128, "%b %d %H %M", timeinfo) != 0) {
+				cout << time_buffer << " ";
+			}
+			else {
+				perror("Unable to retreive modification time." );
+			}
+
+			cout << statbuf.st_mtime << endl;
 		}
 
 		else {
