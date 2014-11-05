@@ -51,6 +51,12 @@ int main(int argc, char* argv[]) {
 		cout << "contents of arg_list: " << arg_list.at(i) << endl;
 	}
 
+	cout << "--------------------------------------------" << endl;
+
+	for (unsigned i = 0; i < user_arg.size(); ++i) {
+		cout << "contents of user_arg: " << user_arg.at(i) << endl;
+	}
+
 	for (unsigned i = 0; i < directories.size(); ++i) {
 		cout << "contents of directories: " << directories.at(i) << endl;
 	}
@@ -71,8 +77,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	struct stat statbuf;
-	//what if there is no directory argument (ls -l)
-	//this lists the directory but its supposed to GO INTO the dir and list its contents
+	//!!!!!!!!!!this lists the directory but its supposed to GO INTO the dir and list its contents
+	//			./a.out ls testdir
+	//			./a.out ls -l testdir and ./a.out ls testdir -l
 	while (!directories.empty()) {
 		string current_dir = directories.back();
 		if (-1 == stat(current_dir.c_str(), &statbuf)) {
@@ -170,25 +177,25 @@ int main(int argc, char* argv[]) {
 			cout << statbuf.st_size << " ";
 			
 			struct tm* timeinfo;
-			char time_buffer [128];
+			char time_buffer [80];
 			time(&statbuf.st_mtime);
-			time_display = localtime(&statbuf.st_mtime);
-			if (strftime(time_buffer, 128, "%b %d %H %M", timeinfo) != 0) {
+			timeinfo = localtime(&statbuf.st_mtime);
+			if (strftime(time_buffer, 80, "%b %d %H:%M", timeinfo) != 0) {
 				cout << time_buffer << " ";
 			}
 			else {
 				perror("Unable to retreive modification time." );
 			}
 
-			cout << statbuf.st_mtime << endl;
+			cout << current_dir << endl;
+
+		
 		}
 
 		else {
-			
-			
-
+			cout << current_dir << endl;		
 		}
-		
+		exit(1);						//for testing purposes	
 	}
 	
 	
