@@ -22,26 +22,29 @@ that there is no error checking on these functions. You MUST add error
 */
 
 bool compare_dname(char* a, char* b) {
-	
-//	cout << "a[0]: " << a[0] << endl;
-//	cout << "b[0]: " << b[0] << endl;
 
-	if (a[0] > b[0]) {
-//		cout << "true" << endl;
-		return true;
-	}
-		
-	if (a[0] == b[0]) {
-		if (a[1] > b[0]) {
-//			cout << "true2" << endl;
-			return true;
+	unsigned j = 0;
+	unsigned k = 0;
+	char dot[2] ;
+	strcpy(dot, ".");
+
+	if (a[j] == dot[0]) {
+		while (a[j] == dot[0]) {
+			j++;
 		}
 	}
 
-	else {
-//		cout <<"false" << endl;
-		return false;
+	if (b[k] == dot[0]) {
+		while(b[k] == dot[0]) {
+			k++;
+		}
 	}
+
+//	cout << "cock" << endl;
+
+	return toupper(a[j]) < toupper(b[k]);
+
+
 }
 
 int main(int argc, char* argv[]) {
@@ -49,6 +52,7 @@ int main(int argc, char* argv[]) {
 	string ls_check = "ls";
 	if (argv[1] != ls_check) {
 //		cout << "not ls" << endl;
+		cout << "bash: " << argv[1] << ": command not found" << endl;
 		exit(1);
 	}
 
@@ -108,24 +112,26 @@ int main(int argc, char* argv[]) {
 		exit(1);	
 	}
 	dirent *direntp;
-	vector<char*> sort_dir;
+	vector<char*> sort_dir2;
 	char slash[2];
 	strcpy(slash, "/");
 	while ((direntp = readdir(dirp))) {
 		if (DT_DIR == (direntp->d_type)) {
 			strncat(direntp->d_name, slash, 1 );
 		}
-		sort_dir.push_back(direntp->d_name);
+		sort_dir2.push_back(direntp->d_name);
 	}
-	//cout << sort_dir.begin()[0] << endl;	
-	//cout << sort_dir.end()[0] << endl;
-	sort(sort_dir.begin(), sort_dir.end(), compare_dname);
+	sort(sort_dir2.begin(), sort_dir2.end(), compare_dname);
 //	for (unsigned i = 0; i < sort_dir.size(); ++i) {
 //		cout << "sorted dir: " << sort_dir.at(i) << endl;	
 //	}
 	
-	unsigned sorted_sz = sort_dir.size();
-	
+	unsigned sorted_sz = sort_dir2.size();
+	vector<char*> sort_dir;
+	for (unsigned i = 0; i < sorted_sz; ++i) {
+		sort_dir.push_back(sort_dir2.back());
+		sort_dir2.pop_back();
+	}
 	
 //	cout << "sorted_sz: " << sorted_sz << endl;
 	while (sorted_sz > 0) {
@@ -140,7 +146,7 @@ int main(int argc, char* argv[]) {
 		string file_name = sort_dir.at(sorted_sz-1);
 		entire_path.append(file_name);
 		
-		cout << "entire path: " << entire_path << endl;
+//		cout << "entire path: " << entire_path << endl;
 		struct stat statbuf;
 		if (-1 == stat(entire_path.c_str(), &statbuf)) {
 			perror("Could not stat the directory.");
@@ -155,11 +161,13 @@ int main(int argc, char* argv[]) {
 			}
 		*/
 
-			cout << "AAAAAAAAAAAAA" << endl;
+//			cout << "AAAAAAAAAAAAA" << endl;
 			if (sort_dir.at(sorted_sz-1)[0] == '.' && a_flag == 0) {
+//				cout << "stuck here" << endl;
+				sorted_sz--;
 				continue; //infinite loop here fuckckckckcfkck c
 			}
-			cout << "BBBBBBBBBBBBBB" << endl;
+//			cout << "BBBBBBBBBBBBBB" << endl;
 
 			if (S_ISDIR(statbuf.st_mode)) {
 				cout << "d";
@@ -282,9 +290,10 @@ int main(int argc, char* argv[]) {
 		}
 	*/		
 			
-			cout << "CCCCCCCCC" << endl;
+	//		cout << "CCCCCCCCC" << endl;
 			
 			if (sort_dir.at(sorted_sz-1)[0] == '.' && a_flag == 0) {
+				sorted_sz--;
 				continue;
 			}
 
