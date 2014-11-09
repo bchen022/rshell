@@ -16,13 +16,7 @@
 
 using namespace std;
 
-/* This is a BARE BONES example of how to use opendir/readdir/closedir. Notice
-that there is no error checking on these functions. You MUST add error
- checking yourself.
-*/
-
 bool compare_dname(char* a, char* b) {
-
 	unsigned j = 0;
 	unsigned k = 0;
 	char dot[2] ;
@@ -33,25 +27,18 @@ bool compare_dname(char* a, char* b) {
 			j++;
 		}
 	}
-
 	if (b[k] == dot[0]) {
 		while(b[k] == dot[0]) {
 			k++;
 		}
 	}
-
-//	cout << "cock" << endl;
-
 	return toupper(a[j]) < toupper(b[k]);
-
-
 }
 
 int main(int argc, char* argv[]) {
 
 	string ls_check = "ls";
 	if (argv[1] != ls_check) {
-//		cout << "not ls" << endl;
 		cout << "bash: " << argv[1] << ": command not found" << endl;
 		exit(1);
 	}
@@ -59,16 +46,18 @@ int main(int argc, char* argv[]) {
 	vector<string> arg_list;
 	vector<string> directories;
 	vector<string> user_arg;
+	vector<string> files;
 	int a_flag = 0;
 	int l_flag = 0;
 	int R_flag = 0;
+	int x_flag = 0;
 
 	for (unsigned i = 1; i < argc; ++i) {				//fill in a vector with the passed in arguments
 		arg_list.push_back(argv[i]);
 	}
 
 	for (unsigned i = 1; i < arg_list.size(); ++i) {			//distinguish between directories and arguments
-		if (arg_list.at(i).at(0) != '-') { 
+		if (arg_list.at(i).at(0) == '/') { 
 			string adirectory = arg_list.at(i);
 			directories.push_back(adirectory);
 		}
@@ -76,6 +65,11 @@ int main(int argc, char* argv[]) {
 		else if (arg_list.at(i).at(0) == '-') {
 			string anargument = arg_list.at(i);
 			user_arg.push_back(anargument);
+		}
+		
+		else {
+			string afile = arg_list.at(i);
+			files.push_back(afile);
 		}
 
 	}
@@ -86,17 +80,197 @@ int main(int argc, char* argv[]) {
 	
 	for (unsigned i = 0; i < user_arg.size(); ++i) {
 		if (user_arg.at(i).find('a') != std::string::npos) {
-//			cout << "a_flag found." << endl;
 			++a_flag;
 		}
 		if (user_arg.at(i).find('l') != std::string::npos) {
-//			cout << "l_flag found." << endl;
 			++l_flag;
 		}
 		if (user_arg.at(i).find('R') != std::string::npos) {
-//			cout << "R_flag found." << endl;
 			++R_flag;
 		}
+	}
+
+	for (unsigned i = 0; i <directories.size(); ++i) {
+		cout << "directories: " << directories.at(i) << endl;
+	}
+
+	for (unsigned i = 0; i <user_arg.size(); ++i) {
+		cout << "user arg: " << user_arg.at(i) << endl;
+	}
+	
+	for (unsigned i = 0; i <files.size(); ++i) {
+		cout << "files: " << files.at(i) << endl;
+	}
+
+	cout << "-------------------------------------" << endl;
+
+	int file_sz = files.size();
+	while (file_sz > 0) {
+		
+		struct stat statbuf;
+		if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
+			perror("Could not stat the file." );
+			exit(1);
+		}
+
+		if (l_flag > 0) {
+			/*if (files.at(sorted_sz-1).front() == '.' && a_flag == 0) {
+				file_sz--;
+				continue; 
+			}*/
+			
+			if (S_ISDIR(statbuf.st_mode)) {
+				cout << "d";
+			}
+			else {
+				if(S_IXUSR & statbuf.st_mode) {
+					x_flag++;
+				}
+	 			if (S_IXGRP & statbuf.st_mode) {
+					x_flag++;
+				}
+				if (S_IXOTH & statbuf.st_mode) {
+					x_flag++;
+				}	
+				cout << "-";
+			}
+		
+			if (S_IRUSR & statbuf.st_mode) {
+				cout << "r";	
+			}
+			else {
+				cout << "-";
+			}
+
+			if(S_IWUSR & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";	
+			}
+	
+			if(S_IXUSR & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IRGRP & statbuf.st_mode) {
+				cout << "r";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IWGRP & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IXGRP & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IROTH & statbuf.st_mode) {
+				cout << "r";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IWOTH & statbuf.st_mode) {
+				cout << "w";
+			}
+			else {
+				cout << "-";
+			}
+
+			if (S_IXOTH & statbuf.st_mode) {
+				cout << "x";
+			}
+			else {
+				cout << "-";
+			}
+
+			cout << " " << statbuf.st_nlink << " ";
+			struct passwd *pw;
+			if ((pw = getpwuid(statbuf.st_uid)) != NULL) {
+				cout << pw->pw_name << " ";
+			}
+			else {
+				perror("Unable to retreive user id.");
+			}
+			struct group *gr;
+			if ((gr = getgrgid(statbuf.st_gid)) != NULL) {
+				cout << gr->gr_name << " ";
+			}
+			else {
+				perror("Unable to retreive group id.");
+			}
+			
+			cout << statbuf.st_size << " ";
+			
+			struct tm* timeinfo;
+			char time_buffer [80];
+			timeinfo = localtime(&statbuf.st_mtime);
+			if (strftime(time_buffer, 80, "%b %d %H:%M", timeinfo) != 0) {
+				cout << time_buffer << " ";
+			}
+			else {
+				perror("Unable to retreive modification time." );
+			}
+			
+			if (x_flag > 0) {
+				cout << files.at(file_sz-1) << "* "  << endl;
+				x_flag = 0;
+			}
+			
+			else {
+				cout << files.at(file_sz-1) << endl;
+			}
+
+			file_sz--;
+/*			if (file_sz == 0) { // && directories.at(0).c_str()[0] == '/'){
+				cout << endl;			
+			}
+*/
+		}
+
+		else {
+			cout << files.at(file_sz -1) << "  ";
+		
+			file_sz--;
+			if (file_sz == 0){
+				cout << endl;			
+			}
+		
+		}
+
+/*		file_sz--;
+		if (file_sz == 0){
+			cout << endl;			
+		}
+*/
+	}
+
+	if (files.size() > 0 ) {
+		if (directories.at(0).c_str()[0] == '/') {
+			cout << endl;
+			cout << directories.at(0) << ": " << endl;
+//			cout << endl;
+		}
+		if (directories.size() == 1 && directories.at(0).c_str()[0] != '/') {
+	
+//			if (directories.at(0).c_str()[0] == '.') {
+				exit(1);
+//			}
+		}	
 	}
 
 	struct stat statbuf;
@@ -105,6 +279,7 @@ int main(int argc, char* argv[]) {
 		perror("Could not stat the directory.");
 		exit(1);
 	}
+	// ./a.out ls main.cpp v
 	const char *dirName = directories.back().c_str();
 	DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
 	if (dirp == NULL) {
@@ -132,12 +307,15 @@ int main(int argc, char* argv[]) {
 		sort_dir.push_back(sort_dir2.back());
 		sort_dir2.pop_back();
 	}
-	
-//	cout << "sorted_sz: " << sorted_sz << endl;
+
+/*	cout << "sorted directories/files list: " << endl;
+	for (unsigned i = 0; i < sort_dir.size(); ++i) {
+		cout << sort_dir.at(i) << endl;
+	}
+*/
 	while (sorted_sz > 0) {
 	//while ((direntp = readdir(dirp)))	{ //readdir returns a pointer to a dirent struct from dirp (the directory stream)
 										  //while direntp is a dirent struct from the directory stream
-	//	cout << direntp->d_name << endl; // use stat here to find attributes of file
 										 // int stat(const char* path, struct stat* buf) 
 										 // stats the file pointed to by path and fills in buf with a ptr to the stat file
 		string entire_path = current_dir;
@@ -153,29 +331,34 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 		
-		//cout << "current directory:" << current_dir << endl;
+//		cout << "current directory:" << current_dir << endl;
 		if (l_flag > 0) {
+		
+//			cout << "total ";
+//			cout << statbuf.st_blocks << endl;
+			//the total disk allocation for all files in that directory
 
-		/*	if (direntp->d_name[0] == '.' && a_flag == 0) {
-				continue;
-			}
-		*/
-
-//			cout << "AAAAAAAAAAAAA" << endl;
 			if (sort_dir.at(sorted_sz-1)[0] == '.' && a_flag == 0) {
-//				cout << "stuck here" << endl;
 				sorted_sz--;
-				continue; //infinite loop here fuckckckckcfkck c
+				continue; 
 			}
-//			cout << "BBBBBBBBBBBBBB" << endl;
-
+			
 			if (S_ISDIR(statbuf.st_mode)) {
 				cout << "d";
-			}//
+			}
 			else {
+				if(S_IXUSR & statbuf.st_mode) {
+					x_flag++;
+				}
+		 		if (S_IXGRP & statbuf.st_mode) {
+					x_flag++;
+				}
+				if (S_IXOTH & statbuf.st_mode) {
+					x_flag++;
+				}	
 				cout << "-";
 			}
-		
+			
 			if (S_IRUSR & statbuf.st_mode) {
 				cout << "r";	
 			}
@@ -259,7 +442,6 @@ int main(int argc, char* argv[]) {
 			
 			struct tm* timeinfo;
 			char time_buffer [80];
-			//time(&statbuf.st_mtime);
 			timeinfo = localtime(&statbuf.st_mtime);
 			if (strftime(time_buffer, 80, "%b %d %H:%M", timeinfo) != 0) {
 				cout << time_buffer << " ";
@@ -268,48 +450,59 @@ int main(int argc, char* argv[]) {
 				perror("Unable to retreive modification time." );
 			}
 			
-	/*		if (DT_DIR == (direntp->d_type)) {
-				cout << direntp->d_name << "/" << endl;
+			if (x_flag > 0) {
+				cout << sort_dir.at(sorted_sz-1) << "* "  << endl;
+				x_flag = 0;
 			}
-	*/
-	//		else {
-	//			cout << direntp->d_name << endl;
-	//		}
 			
-			cout << sort_dir.at(sorted_sz-1) << endl;
+			else {
+				cout << sort_dir.at(sorted_sz-1) << endl;
+			}
 		}
 		
 
 		else {
-			//cout << "no -l flag" << endl;
-	/*		if (direntp->d_name[0] == '.' && a_flag == 0) {
-				continue;
-			}
 
-			cout << direntp->d_name << "  ";		
-		}
-	*/		
-			
-	//		cout << "CCCCCCCCC" << endl;
-			
+			if (!S_ISDIR(statbuf.st_mode)) {
+				if(S_IXUSR & statbuf.st_mode) {
+					x_flag++;
+				}
+				if (S_IXGRP & statbuf.st_mode) {
+					x_flag++;
+				}
+				if (S_IXOTH & statbuf.st_mode) {
+					x_flag++;
+				}	
+			}
+		
 			if (sort_dir.at(sorted_sz-1)[0] == '.' && a_flag == 0) {
 				sorted_sz--;
 				continue;
 			}
 
-			cout << sort_dir.at(sorted_sz-1) << "  ";
+			if (x_flag > 0) {
+				cout << sort_dir.at(sorted_sz-1) << "*  ";
+				x_flag = 0;
+			}
 
+			else {
+				cout << sort_dir.at(sorted_sz-1) << "  ";
+			}
 		}
 		
 		sorted_sz--;
 	}
 
-	cout << endl;	
+	if (l_flag > 0) {
+	}
+	else {
+		cout << endl;	
+	}
 	closedir(dirp);
-	cout << "closed the directory stream pointed to by dirp" << endl;
-	directories.pop_back();
+//	cout << "closed the directory stream pointed to by dirp" << endl;
+//	directories.pop_back();
 
 //		exit(1);				//
-}
 
+}
 
