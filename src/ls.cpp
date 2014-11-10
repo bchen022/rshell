@@ -90,7 +90,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	for (unsigned i = 0; i <directories.size(); ++i) {
+	int file_sz = files.size();
+
+
+/*	for (unsigned i = 0; i <directories.size(); ++i) {
 		cout << "directories: " << directories.at(i) << endl;
 	}
 
@@ -103,10 +106,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	cout << "-------------------------------------" << endl;
+*/
 
-	int file_sz = files.size();
+
+
 	while (file_sz > 0) {
-		
+
 		struct stat statbuf;
 		if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
 			perror("Could not stat the file." );
@@ -236,6 +241,8 @@ int main(int argc, char* argv[]) {
 			}
 
 			file_sz--;
+//			files.pop_back();
+
 /*			if (file_sz == 0) { // && directories.at(0).c_str()[0] == '/'){
 				cout << endl;			
 			}
@@ -246,6 +253,7 @@ int main(int argc, char* argv[]) {
 			cout << files.at(file_sz -1) << "  ";
 		
 			file_sz--;
+//			files.pop_back();
 			if (file_sz == 0){
 				cout << endl;			
 			}
@@ -279,7 +287,6 @@ int main(int argc, char* argv[]) {
 		perror("Could not stat the directory.");
 		exit(1);
 	}
-	// ./a.out ls main.cpp v
 	const char *dirName = directories.back().c_str();
 	DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
 	if (dirp == NULL) {
@@ -308,16 +315,13 @@ int main(int argc, char* argv[]) {
 		sort_dir2.pop_back();
 	}
 
-/*	cout << "sorted directories/files list: " << endl;
+	cout << "sorted directories/files list: " << endl;
 	for (unsigned i = 0; i < sort_dir.size(); ++i) {
 		cout << sort_dir.at(i) << endl;
 	}
-*/
+
 	while (sorted_sz > 0) {
-	//while ((direntp = readdir(dirp)))	{ //readdir returns a pointer to a dirent struct from dirp (the directory stream)
-										  //while direntp is a dirent struct from the directory stream
-										 // int stat(const char* path, struct stat* buf) 
-										 // stats the file pointed to by path and fills in buf with a ptr to the stat file
+//		cout << "sorted_sz: " << sorted_sz << endl;
 		string entire_path = current_dir;
 		entire_path.append("/");
 	//	string file_name = direntp->d_name;
@@ -330,7 +334,18 @@ int main(int argc, char* argv[]) {
 			perror("Could not stat the directory.");
 			exit(1);
 		}
-		
+
+		if (R_flag > 0) {
+			if (statbuf.st_mode & S_IFDIR) {
+				cout << "current_dir: " << current_dir << ": " << endl;
+				char entire_path2[entire_path.length()];
+				strcpy(entire_path2, entire_path.c_str());
+				sort_dir.push_back(entire_path2);
+//				sorted_sz++;
+			}
+		}
+
+
 //		cout << "current directory:" << current_dir << endl;
 		if (l_flag > 0) {
 		
@@ -504,5 +519,5 @@ int main(int argc, char* argv[]) {
 
 //		exit(1);				//
 
-}
 
+}
