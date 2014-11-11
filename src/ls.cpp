@@ -36,6 +36,25 @@ bool compare_dname(char* a, char* b) {
 	return toupper(a[j]) < toupper(b[k]);
 }
 
+bool compare_files(string a, string b) {
+	unsigned j =0;
+	unsigned k =0;
+	string dot2 = ".";
+	
+	if (&a.at(j) == ".") {
+		while (&a.at(j) == ".") {
+			++j;
+		}
+	}
+	if (&b.at(k) == ".") {
+		while (&b.at(k) == ".") {
+			++k;
+		}
+	}
+	return toupper(a.at(j)) < toupper(b.at(k));
+
+}
+
 int main(int argc, char* argv[]) {
 
 	string ls_check = "ls";
@@ -50,6 +69,7 @@ int main(int argc, char* argv[]) {
 	vector<string> arg_list;
 	vector<string> directories;
 	vector<string> user_arg;
+	vector<string> files2;
 	vector<string> files;
 	int a_flag = 0;
 	int l_flag = 0;
@@ -73,7 +93,7 @@ int main(int argc, char* argv[]) {
 		
 		else {
 			string afile = arg_list.at(i);
-			files.push_back(afile);
+			files2.push_back(afile);
 		}
 
 	}
@@ -94,7 +114,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	int file_sz = files.size();
+	int file_sz = files2.size();
 
 
 	for (unsigned i = 0; i <directories.size(); ++i) {
@@ -105,21 +125,28 @@ int main(int argc, char* argv[]) {
 		cout << "user arg: " << user_arg.at(i) << endl;
 	}
 	
-	for (unsigned i = 0; i <files.size(); ++i) {
-		cout << "files: " << files.at(i) << endl;
+	for (unsigned i = 0; i <files2.size(); ++i) {
+		cout << "files: " << files2.at(i) << endl;
 	}
 
 	cout << "-------------------------------------" << endl;
 	cout << endl;
 
-	while (file_sz > 0) {
+	if (file_sz > 0) {
+		sort(files2.begin(), files2.end(), compare_files);
+		for (unsigned i = 0; i < file_sz; ++i) {
+			files.push_back(files2.back());		
+			files2.pop_back();
+		}
+	
+	}
 
+	while (file_sz > 0) {
 		struct stat statbuf;
 		if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
 			perror("Could not stat the file." );
 			exit(1);
 		}
-
 		if (l_flag > 0) {
 		
 			if (S_ISDIR(statbuf.st_mode)) {
@@ -252,8 +279,12 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (files.size() > 0 ) {
+
 		if (directories.at(0).c_str()[0] == '/') {
 			cout << endl;
+		}
+
+		if (directories.size() == 1 && directories.at(0).c_str()[0] == '/') {
 			cout << directories.at(0) << ": " << endl;
 		}
 		if (directories.size() == 1 && directories.at(0).c_str()[0] != '/') {
@@ -267,7 +298,6 @@ int main(int argc, char* argv[]) {
 		if (initial_dir_sz > 1) {
 			cout << "current_dir: " << current_dir << endl;
 		}
-	
 	
 		const char *dirName = directories.back().c_str();
 		DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
@@ -341,7 +371,7 @@ int main(int argc, char* argv[]) {
 			cout << "total " << total_block << endl;
 		}
 
-/*		unsigned longest_name = 0;
+		unsigned longest_name = 0;
 		for (unsigned i = 0; i < sort_dir.size(); ++i) {
 			unsigned longest_name_temp = 0;
 			unsigned j = 0;
@@ -354,8 +384,8 @@ int main(int argc, char* argv[]) {
 			}
 		}
 		
-		cout << "longest_name: " << longest_name << endl;
-*/		
+//		cout << "longest_name: " << longest_name << endl;
+		
 		while (sorted_sz > 0) {
 			string entire_path = current_dir;
 			entire_path.append("/");
@@ -523,6 +553,7 @@ int main(int argc, char* argv[]) {
 				}
 	
 				if (x_flag > 0) {
+					
 //					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1) << left << "*  ";
 					cout << sort_dir.at(sorted_sz-1) << "*  ";
 					x_flag = 0;
