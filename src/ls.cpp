@@ -132,168 +132,171 @@ int main(int argc, char* argv[]) {
 	cout << "-------------------------------------" << endl;
 	cout << endl;
 
-	if (file_sz > 0) {
-		sort(files2.begin(), files2.end(), compare_files);
-		for (unsigned i = 0; i < file_sz; ++i) {
-			files.push_back(files2.back());		
-			files2.pop_back();
-		}
-	
-	}
 
-	while (file_sz > 0) {
-		struct stat statbuf;
-		if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
-			perror("Could not stat the file." );
-			exit(1);
-		}
-		if (l_flag > 0) {
-		
-			if (S_ISDIR(statbuf.st_mode)) {
-				cout << "d";
-			}
-			else {
-				if(S_IXUSR & statbuf.st_mode) {
-					x_flag++;
-				}
-	 			if (S_IXGRP & statbuf.st_mode) {
-					x_flag++;
-				}
-				if (S_IXOTH & statbuf.st_mode) {
-					x_flag++;
-				}	
-				cout << "-";
-			}
-		
-			if (S_IRUSR & statbuf.st_mode) {
-				cout << "r";	
-			}
-			else {
-				cout << "-";
-			}
-
-			if(S_IWUSR & statbuf.st_mode) {
-				cout << "w";
-			}
-			else {
-				cout << "-";	
-			}
-	
-			if(S_IXUSR & statbuf.st_mode) {
-				cout << "x";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IRGRP & statbuf.st_mode) {
-				cout << "r";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IWGRP & statbuf.st_mode) {
-				cout << "w";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IXGRP & statbuf.st_mode) {
-				cout << "x";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IROTH & statbuf.st_mode) {
-				cout << "r";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IWOTH & statbuf.st_mode) {
-				cout << "w";
-			}
-			else {
-				cout << "-";
-			}
-
-			if (S_IXOTH & statbuf.st_mode) {
-				cout << "x";
-			}
-			else {
-				cout << "-";
-			}
-
-			cout << " " << statbuf.st_nlink << " ";
-			struct passwd *pw;
-			if ((pw = getpwuid(statbuf.st_uid)) != NULL) {
-				cout << pw->pw_name << " ";
-			}
-			else {
-				perror("Unable to retreive user id.");
-			}
-			struct group *gr;
-			if ((gr = getgrgid(statbuf.st_gid)) != NULL) {
-				cout << gr->gr_name << " ";
-			}
-			else {
-				perror("Unable to retreive group id.");
-			}
-			
-			cout << statbuf.st_size << " ";
-			
-			struct tm* timeinfo;
-			char time_buffer [80];
-			timeinfo = localtime(&statbuf.st_mtime);
-			if (strftime(time_buffer, 80, "%b %d %H:%M", timeinfo) != 0) {
-				cout << time_buffer << " ";
-			}
-			else {
-				perror("Unable to retreive modification time." );
-			}
-			
-			if (x_flag > 0) {
-				cout << files.at(file_sz-1) << "* "  << endl;
-				x_flag = 0;
-			}
-			
-			else {
-				cout << files.at(file_sz-1) << endl;
-			}
-
-			file_sz--;
-		}
-
-		else {
-			cout << files.at(file_sz -1) << "  ";
-		
-			file_sz--;
-			if (file_sz == 0){
-				cout << endl;			
-			}
-		}
-	}
-
-	if (files.size() > 0 ) {
-
-		if (directories.at(0).c_str()[0] == '/') {
-			cout << endl;
-		}
-
-		if (directories.size() == 1 && directories.at(0).c_str()[0] == '/') {
-			cout << directories.at(0) << ": " << endl;
-		}
-		if (directories.size() == 1 && directories.at(0).c_str()[0] != '/') {
-			exit(1);
-		}	
-	}
 
 	unsigned initial_dir_sz = directories.size();
 	while (!directories.empty() ) {
+
+		if (file_sz > 0) {
+			sort(files2.begin(), files2.end(), compare_files);
+			for (unsigned i = 0; i < file_sz; ++i) {
+				files.push_back(files2.back());		
+				files2.pop_back();
+			}
+		
+		}
+	
+		while (file_sz > 0) {
+			struct stat statbuf;
+			if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
+				perror("Could not stat the file." );
+				exit(1);
+			}
+			if (l_flag > 0) {
+			
+				if (S_ISDIR(statbuf.st_mode)) {
+					cout << "d";
+				}
+				else {
+					if(S_IXUSR & statbuf.st_mode) {
+						x_flag++;
+					}
+		 			if (S_IXGRP & statbuf.st_mode) {
+						x_flag++;
+					}
+					if (S_IXOTH & statbuf.st_mode) {
+						x_flag++;
+					}	
+					cout << "-";
+				}
+			
+				if (S_IRUSR & statbuf.st_mode) {
+					cout << "r";	
+				}
+				else {
+					cout << "-";
+				}
+	
+				if(S_IWUSR & statbuf.st_mode) {
+					cout << "w";
+				}
+				else {
+					cout << "-";	
+				}
+		
+				if(S_IXUSR & statbuf.st_mode) {
+					cout << "x";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IRGRP & statbuf.st_mode) {
+					cout << "r";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IWGRP & statbuf.st_mode) {
+					cout << "w";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IXGRP & statbuf.st_mode) {
+					cout << "x";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IROTH & statbuf.st_mode) {
+					cout << "r";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IWOTH & statbuf.st_mode) {
+					cout << "w";
+				}
+				else {
+					cout << "-";
+				}
+	
+				if (S_IXOTH & statbuf.st_mode) {
+					cout << "x";
+				}
+				else {
+					cout << "-";
+				}
+	
+				cout << " " << statbuf.st_nlink << " ";
+				struct passwd *pw;
+				if ((pw = getpwuid(statbuf.st_uid)) != NULL) {
+					cout << pw->pw_name << " ";
+				}
+				else {
+					perror("Unable to retreive user id.");
+				}
+				struct group *gr;
+				if ((gr = getgrgid(statbuf.st_gid)) != NULL) {
+					cout << gr->gr_name << " ";
+				}
+				else {
+					perror("Unable to retreive group id.");
+				}
+				
+				cout << statbuf.st_size << " ";
+				
+				struct tm* timeinfo;
+				char time_buffer [80];
+				timeinfo = localtime(&statbuf.st_mtime);
+				if (strftime(time_buffer, 80, "%b %d %H:%M", timeinfo) != 0) {
+					cout << time_buffer << " ";
+				}
+				else {
+					perror("Unable to retreive modification time." );
+				}
+				
+				if (x_flag > 0) {
+					cout << files.at(file_sz-1) << "* "  << endl;
+					x_flag = 0;
+				}
+				
+				else {
+					cout << files.at(file_sz-1) << endl;
+				}
+	
+				file_sz--;
+			}
+	
+			else {
+				cout << files.at(file_sz -1) << "  ";
+			
+				file_sz--;
+				if (file_sz == 0){
+					cout << endl;			
+				}
+			}
+		}
+	
+		if (files.size() > 0 ) {
+	
+			if (directories.at(0).c_str()[0] == '/') {
+				cout << endl;
+			}
+	
+			if (directories.size() == 1 && directories.at(0).c_str()[0] == '/') {
+				cout << directories.at(0) << ": " << endl;
+			}
+			if (directories.size() == 1 && directories.at(0).c_str()[0] != '/') {
+				exit(1);
+			}	
+		}
+
 		string current_dir = directories.back();
 		if (initial_dir_sz > 1) {
 			cout << "current_dir: " << current_dir << endl;
