@@ -348,7 +348,7 @@ int main(int argc, char* argv[]) {
 			}
 			sort_dir2.push_back(direntp->d_name);
 		}
-		if (direntp == -1){
+		if (readdir(dirp) == NULL){
 			perror("Error in readdir.");
 			exit(1);
 		}
