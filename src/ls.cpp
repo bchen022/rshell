@@ -464,19 +464,41 @@ int main(int argc, char* argv[]) {
 				if (statbuf.st_mode & S_IFDIR) {
 //					cout << "entire_path: " << entire_path << endl;
 //					cout << "file name: " << file_name << endl;
-					if (file_name == "./") {
+					if (a_flag > 0) {
+						if (file_name == "./") {
+						}
+						else if (file_name == "../" ) {
+						}
+
+						else {
+//							cout << "putting this into r_directories: " << file_name << endl;
+//							cout << "file name2: " << file_name.c_str()[0] << endl;
+							r_directories.push_back(file_name);
+							iteration_flag++;
+						}
 					}
-					else if (file_name == "../" ) {
-					}
-					else if (file_name.c_str()[0] == dot[0]) {
-//						cout << "file name: " << file_name.c_str()[0] << endl;
-					}
+
 					else {
-//						cout << "putting this into r_directories: " << file_name << endl;
-//						cout << "file name2: " << file_name.c_str()[0] << endl;
-						r_directories.push_back(file_name);
-						iteration_flag++;
+						if (file_name == "./") {
+						}
+						else if (file_name == "../" ) {
+						}
+						else if (file_name.c_str()[0] == dot[0]) {
+//							cout << "file name: " << file_name.c_str()[0] << endl;
+						}
+						else {
+//							cout << "putting this into r_directories: " << file_name << endl;
+//							cout << "file name2: " << file_name.c_str()[0] << endl;
+							r_directories.push_back(file_name);
+							iteration_flag++;
+						}
+
+
+
+
 					}
+
+
 				}
 			}
 	
