@@ -68,7 +68,7 @@ However, this program has bugs:
 
 5) Outputting with the -l flag does not output perfectly aligned columns.
 
-
+6) With the -R flag, some display of paths will have an extra '/'.
 
 
 
