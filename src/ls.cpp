@@ -71,6 +71,9 @@ int main(int argc, char* argv[]) {
 	vector<string> user_arg;
 	vector<string> files2;
 	vector<string> files;
+	vector<string> r_directories;
+	unsigned iteration_flag = 0;
+
 	int a_flag = 0;
 	int l_flag = 0;
 	int R_flag = 0;
@@ -134,11 +137,20 @@ int main(int argc, char* argv[]) {
 
 	unsigned initial_dir_sz = directories.size();
 	while (!directories.empty() ) {
+		if (iteration_flag > 0 ) {
+			cout << endl;
+			cout << directories.back() << ": " << endl;
+
+		}
+/*		cout << endl;
+		cout << "==========================================" << endl;
 		cout << "current directory vector(in actual order): " << endl;
 		for (unsigned i = 0; i < directories.size(); ++i) {
 			cout << directories.at(i) << endl;
 		}
-		
+		cout << "===========================================" << endl;
+		cout << endl;	
+*/	
 		if (file_sz > 0) {
 			sort(files2.begin(), files2.end(), compare_files);
 			for (unsigned i = 0; i < file_sz; ++i) {
@@ -305,12 +317,22 @@ int main(int argc, char* argv[]) {
 			}	
 		}
 
+/*/////		cout << "--------------directories before sort: ---------------" << endl;
+		for (unsigned i = 0; i < directories.size(); ++i) {
+			cout << directories.at(i) << endl;		
+		}
+		cout << "-------------------------------------------------------" << endl;
+
+/////// */
+
 		string current_dir = directories.back();
 		if (initial_dir_sz > 1) {
 			cout << "current path: " << current_dir << endl;
 		}
-	
+
+		
 		const char *dirName = directories.back().c_str();
+		cout << "directory stream: " << directories.back() << endl;
 		DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
 		if (dirp == NULL) {
 			perror("Could not open directory stream.");
@@ -327,9 +349,11 @@ int main(int argc, char* argv[]) {
 			sort_dir2.push_back(direntp->d_name);
 		}
 		sort(sort_dir2.begin(), sort_dir2.end(), compare_dname);
-		
 		unsigned sorted_sz = sort_dir2.size();
 		vector<char*> sort_dir;
+		if (!sort_dir.empty() ) {
+			sort_dir.clear();
+		}
 		for (unsigned i = 0; i < sorted_sz; ++i) {
 			sort_dir.push_back(sort_dir2.back());
 			sort_dir2.pop_back();
@@ -415,15 +439,15 @@ int main(int argc, char* argv[]) {
 		longest_name = longest_name + 3;
 		
 //		cout << "longest_name: " << longest_name << endl;
-		
 		while (sorted_sz > 0) {
 			int d_flag = 0;
 
 			string entire_path = current_dir;
 			entire_path.append("/");
 			string file_name = sort_dir.at(sorted_sz-1);
+//			cout << "filename: " << file_name << endl;
 			entire_path.append(file_name);
-			cout << "entire path: " << entire_path << endl;	
+//			cout << "entire path: " << entire_path << endl;	
 			struct stat statbuf;
 			if (-1 == stat(entire_path.c_str(), &statbuf)) {
 				perror("Could not stat the directory.");
@@ -434,11 +458,15 @@ int main(int argc, char* argv[]) {
 			}
 			if (R_flag > 0) {
 				if (statbuf.st_mode & S_IFDIR) {
-					cout << "current_dir: " << current_dir << ": " << endl;
-					char entire_path2[entire_path.length()];
-					strcpy(entire_path2, entire_path.c_str());
-					sort_dir.push_back(entire_path2);
-//				sorted_sz++;
+					if (file_name == "./") {
+					}
+					else if (file_name == "../" ) {
+					}
+					else {
+//						cout << "putting this into r_directories: " << file_name << endl;
+						r_directories.push_back(file_name);
+						iteration_flag++;
+					}
 				}
 			}
 	
@@ -467,7 +495,7 @@ int main(int argc, char* argv[]) {
 				}
 				
 				if (S_IRUSR & statbuf.st_mode) {
-					cout << "r";	
+					cout << "r";
 				}
 				else {
 					cout << "-";
@@ -624,10 +652,49 @@ int main(int argc, char* argv[]) {
 		else {
 			cout << endl;	
 		}
-		closedir(dirp);
+
 		directories.pop_back();
+		closedir(dirp);
+		if (iteration_flag > 0) {
+			unsigned i = r_directories.size();
+			while (i > 0) {
+				string entire_path2 = current_dir;
+				entire_path2.append("/");
+				entire_path2.append(r_directories.back());
+				directories.push_back(entire_path2);
+				r_directories.pop_back();
+				--i;
+			}
+		}
+
 		if (initial_dir_sz > 1) {
 			cout << endl;
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
