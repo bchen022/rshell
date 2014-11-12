@@ -75,7 +75,8 @@ int main(int argc, char* argv[]) {
 	int l_flag = 0;
 	int R_flag = 0;
 	int x_flag = 0;
-
+	
+	
 	for (unsigned i = 1; i < argc; ++i) {				//fill in a vector with the passed in arguments
 		arg_list.push_back(argv[i]);
 	}
@@ -116,7 +117,6 @@ int main(int argc, char* argv[]) {
 
 	int file_sz = files2.size();
 
-
 	for (unsigned i = 0; i <directories.size(); ++i) {
 		cout << "directories: " << directories.at(i) << endl;
 	}
@@ -132,11 +132,13 @@ int main(int argc, char* argv[]) {
 	cout << "-------------------------------------" << endl;
 	cout << endl;
 
-
-
 	unsigned initial_dir_sz = directories.size();
 	while (!directories.empty() ) {
-
+		cout << "current directory vector(in actual order): " << endl;
+		for (unsigned i = 0; i < directories.size(); ++i) {
+			cout << directories.at(i) << endl;
+		}
+		
 		if (file_sz > 0) {
 			sort(files2.begin(), files2.end(), compare_files);
 			for (unsigned i = 0; i < file_sz; ++i) {
@@ -150,7 +152,13 @@ int main(int argc, char* argv[]) {
 			struct stat statbuf;
 			if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
 				perror("Could not stat the file." );
-				exit(1);
+				if (directories.size() > 1) {
+				
+				}
+				else {
+					exit(1);
+				}
+				
 			}
 			if (l_flag > 0) {
 			
@@ -299,7 +307,7 @@ int main(int argc, char* argv[]) {
 
 		string current_dir = directories.back();
 		if (initial_dir_sz > 1) {
-			cout << "current_dir: " << current_dir << endl;
+			cout << "current path: " << current_dir << endl;
 		}
 	
 		const char *dirName = directories.back().c_str();
@@ -378,36 +386,59 @@ int main(int argc, char* argv[]) {
 		for (unsigned i = 0; i < sort_dir.size(); ++i) {
 			unsigned longest_name_temp = 0;
 			unsigned j = 0;
-			while (sort_dir.at(i)[j] != '\0') {
-				longest_name_temp++;
-				++j;
+			if (a_flag>0) {
+				while (sort_dir.at(i)[j] != '\0') {
+					longest_name_temp++;
+					++j;
+				}
+				if (longest_name_temp > longest_name) {
+					longest_name = longest_name_temp;					
+				}
 			}
-			if (longest_name_temp > longest_name) {
-				longest_name = longest_name_temp;					
+			else {
+				if (sort_dir.at(i)[0] == dot[0]) {
+					continue;
+				}
+				else {
+					while (sort_dir.at(i)[j] != '\0') {
+						longest_name_temp++;
+						++j;
+					}
+					if (longest_name_temp > longest_name) {
+						longest_name = longest_name_temp;					
+					}				
+				}
 			}
 		}
+		unsigned len_count = 0;
+		unsigned max_width = 80;
+		longest_name = longest_name + 3;
 		
 //		cout << "longest_name: " << longest_name << endl;
 		
 		while (sorted_sz > 0) {
+			int d_flag = 0;
+
 			string entire_path = current_dir;
 			entire_path.append("/");
 			string file_name = sort_dir.at(sorted_sz-1);
 			entire_path.append(file_name);
-			
+			cout << "entire path: " << entire_path << endl;	
 			struct stat statbuf;
 			if (-1 == stat(entire_path.c_str(), &statbuf)) {
 				perror("Could not stat the directory.");
 				exit(1);
 			}
-	
+			if (S_ISDIR(statbuf.st_mode)) {
+				d_flag++;
+			}
 			if (R_flag > 0) {
 				if (statbuf.st_mode & S_IFDIR) {
 					cout << "current_dir: " << current_dir << ": " << endl;
 					char entire_path2[entire_path.length()];
 					strcpy(entire_path2, entire_path.c_str());
 					sort_dir.push_back(entire_path2);
-	//				sorted_sz++;
+//				sorted_sz++;
 				}
 			}
 	
@@ -440,7 +471,7 @@ int main(int argc, char* argv[]) {
 				}
 				else {
 					cout << "-";
-				}
+				}	
 	
 				if(S_IWUSR & statbuf.st_mode) {
 					cout << "w";
@@ -534,8 +565,8 @@ int main(int argc, char* argv[]) {
 				else {
 					cout << sort_dir.at(sorted_sz-1) << endl;
 				}
-			}
 			
+			}		
 			else {
 	
 				if (!S_ISDIR(statbuf.st_mode)) {
@@ -556,15 +587,32 @@ int main(int argc, char* argv[]) {
 				}
 	
 				if (x_flag > 0) {
-					
-//					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1) << left << "*  ";
-					cout << sort_dir.at(sorted_sz-1) << "*  ";
+
+					if (d_flag > 0) {
+					}
+					else {
+						unsigned get_len = strlen(sort_dir.at(sorted_sz-1));
+						strcat(sort_dir.at(sorted_sz-1), "*  ");
+					}
+					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1);
+					len_count = len_count + longest_name;
+					if ((len_count + longest_name) > max_width) {
+						cout << endl;
+						len_count = 0;
+					}
+//					cout << sort_dir.at(sorted_sz-1) << "*  ";
 					x_flag = 0;
 				}
 	
 				else {
-//					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1) << left <<  "  ";
-					cout << sort_dir.at(sorted_sz-1) << "  ";
+					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1);// << left <<  "  ";
+					len_count = len_count + longest_name;
+					if ((len_count + longest_name) > max_width) {
+						cout << endl;
+						len_count = 0;
+					}
+
+//					cout << sort_dir.at(sorted_sz-1) << "  ";
 				}
 			}
 			
