@@ -348,10 +348,6 @@ int main(int argc, char* argv[]) {
 			}
 			sort_dir2.push_back(direntp->d_name);
 		}
-		if (readdir(dirp) == NULL){
-			perror("Error in readdir.");
-			exit(1);
-		}
 
 		sort(sort_dir2.begin(), sort_dir2.end(), compare_dname);
 		unsigned sorted_sz = sort_dir2.size();
