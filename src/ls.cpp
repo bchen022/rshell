@@ -41,13 +41,13 @@ bool compare_files(string a, string b) {
 	unsigned k =0;
 	string dot2 = ".";
 	
-	if (&a.at(j) == ".") {
-		while (&a.at(j) == ".") {
+	if (&a.at(j) == dot2) {
+		while (&a.at(j) == dot2) {
 			++j;
 		}
 	}
-	if (&b.at(k) == ".") {
-		while (&b.at(k) == ".") {
+	if (&b.at(k) == dot2) {
+		while (&b.at(k) == dot2) {
 			++k;
 		}
 	}
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
 	int x_flag = 0;
 	
 	
-	for (unsigned i = 1; i < argc; ++i) {				//fill in a vector with the passed in arguments
+	for (int i = 1; i < argc; ++i) {				//fill in a vector with the passed in arguments
 		arg_list.push_back(argv[i]);
 	}
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	int file_sz = files2.size();
+	unsigned file_sz = files2.size();
 
 /*	for (unsigned i = 0; i <directories.size(); ++i) {
 		cout << "directories: " << directories.at(i) << endl;
@@ -641,7 +641,6 @@ int main(int argc, char* argv[]) {
 					if (d_flag > 0) {
 					}
 					else {
-						unsigned get_len = strlen(sort_dir.at(sorted_sz-1));
 						strcat(sort_dir.at(sorted_sz-1), "*  ");
 					}
 					cout << left << setw(longest_name) << sort_dir.at(sorted_sz-1);
