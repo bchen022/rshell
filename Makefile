@@ -14,7 +14,7 @@ cp: src/cp.cpp
 
 ls: src/ls.cpp
 		([ ! -d bin] && mkdir bin) || [ -d bin ]
-		g++ $(FLAGS) src/ls.cpp -o bin/rshell
+		g++ $(FLAGS) src/ls.cpp -o bin/ls
 
 
 clean:
