@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 
 	int file_sz = files2.size();
 
-	for (unsigned i = 0; i <directories.size(); ++i) {
+/*	for (unsigned i = 0; i <directories.size(); ++i) {
 		cout << "directories: " << directories.at(i) << endl;
 	}
 
@@ -138,6 +138,8 @@ int main(int argc, char* argv[]) {
 
 	cout << "-------------------------------------" << endl;
 	cout << endl;
+
+*/
 
 	unsigned initial_dir_sz = directories.size();
 	while (!directories.empty() ) {
@@ -168,6 +170,8 @@ int main(int argc, char* argv[]) {
 			struct stat statbuf;
 			if (-1 == stat(files.at(file_sz -1).c_str(), &statbuf)) {
 				perror("Could not stat the file." );
+				file_sz--;
+				continue;
 				if (directories.size() > 1) {
 				
 				}
@@ -320,15 +324,7 @@ int main(int argc, char* argv[]) {
 				exit(1);
 			}	
 		}
-
-/*/////		cout << "--------------directories before sort: ---------------" << endl;
-		for (unsigned i = 0; i < directories.size(); ++i) {
-			cout << directories.at(i) << endl;		
-		}
-		cout << "-------------------------------------------------------" << endl;
-
-/////// */
-
+		
 		string current_dir = directories.back();
 		if (initial_dir_sz > 1) {
 			cout << "current path: " << current_dir << endl;
@@ -492,13 +488,7 @@ int main(int argc, char* argv[]) {
 							r_directories.push_back(file_name);
 							iteration_flag++;
 						}
-
-
-
-
 					}
-
-
 				}
 			}
 	
