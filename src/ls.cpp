@@ -94,6 +94,10 @@ int main(int argc, char* argv[]) {
 			string anargument = arg_list.at(i);
 			user_arg.push_back(anargument);
 		}
+
+		else if (arg_list.at(i).at(0) == '.') {
+			directories.push_back(".");
+		}
 		
 		else {
 			string afile = arg_list.at(i);
@@ -332,7 +336,7 @@ int main(int argc, char* argv[]) {
 
 		
 		const char *dirName = directories.back().c_str();
-		cout << "directory stream: " << directories.back() << endl;
+//		cout << "directory stream: " << directories.back() << endl;
 		DIR *dirp = opendir(dirName);			//opens and returns a directory stream //dirp points to the directory stream
 		if (dirp == NULL) {
 			perror("Could not open directory stream.");
@@ -458,12 +462,18 @@ int main(int argc, char* argv[]) {
 			}
 			if (R_flag > 0) {
 				if (statbuf.st_mode & S_IFDIR) {
+//					cout << "entire_path: " << entire_path << endl;
+//					cout << "file name: " << file_name << endl;
 					if (file_name == "./") {
 					}
 					else if (file_name == "../" ) {
 					}
+					else if (file_name.c_str()[0] == dot[0]) {
+//						cout << "file name: " << file_name.c_str()[0] << endl;
+					}
 					else {
 //						cout << "putting this into r_directories: " << file_name << endl;
+//						cout << "file name2: " << file_name.c_str()[0] << endl;
 						r_directories.push_back(file_name);
 						iteration_flag++;
 					}
