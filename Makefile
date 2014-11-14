@@ -9,11 +9,11 @@ rshell: src/main.cpp
 		g++ $(FLAGS) src/main.cpp -o bin/rshell
 
 cp: src/cp.cpp
-		([ ! -d bin] && mkdir bin) || [ -d bin ]
+		([ ! -d bin ] && mkdir bin) || [ -d bin ]
 		g++ $(FLAGS) src/cp.cpp -o bin/cp
 
 ls: src/ls.cpp
-		([ ! -d bin] && mkdir bin) || [ -d bin ]
+		([ ! -d bin ]  && mkdir bin) || [ -d bin ]
 		g++ $(FLAGS) src/ls.cpp -o bin/ls
 
 
