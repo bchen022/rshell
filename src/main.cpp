@@ -97,7 +97,56 @@ int main() {
 					cout << "contents of argv_vect1: " << argv_vect.at(argv_ctr) << endl;
 				}
 			}
+		
+			char* argv_tok2 = strtok_r(argv_vect.back(), " " , &saveptr2);
+			while (argv_tok2 != NULL) {
+				argv_vect2.push_back(argv_tok2);
+				argv_tok2 = strtok_r(NULL, " ", &saveptr2);
+			}
+			for (unsigned argv2_ctr = 0; argv2_ctr < argv_vect2.size(); ++argv2_ctr) {
+				cout << "contents of argv_vect2: " << argv_vect2.at(argv2_ctr) << endl;
+			}
 			
+			int command_sz = argv_vect2.size();
+			char** argv = new char*[command_sz + 1]; 								//create argv for execvp
+			for (unsigned j = 0; j < argv_vect2.size(); ++j) {
+				string exitor = "exit";
+				string exitor2 = " exit";
+				int exit_comp = strcmp(argv_vect2.at(j), exitor.c_str());
+				int exit_comp2 = strcmp(argv_vect2.at(j), exitor2.c_str());
+				if (exit_comp == 0 || exit_comp2 == 0) {
+					exit(1);
+				}
+				
+				argv[j] = new char[sizeof(argv_vect2.at(j)) + 1];					//filling in each index of argv with
+				strcpy(argv[j], argv_vect2.at(j));									//enough space for cstring commands
+			}
+
+			for (unsigned argv3_ctr = 0; argv3_ctr < argv_vect2.size(); ++argv3_ctr) {
+				cout << "contents of argv array: " << argv[argv3_ctr] << endl;
+			}
+		
+			argv[argv_vect2.size()] = NULL;
+
+			int pid2 = fork();
+			int status = 0;
+			if (pid2 == -1) {
+				perror("Unable to fork for execvp.");
+				exit(1);
+			}
+			else if (pid2 == 0) {
+				cout << "execvp's target: " << argv[0] << endl;
+				if (-1 == execvp(argv[0], argv)) {
+					perror("There was an error in execvp. ");
+					if (and_flag > 0) {
+						exit(1); //exit the child process to continue with the parent
+					}
+					exit(1); //exit the child process
+				}
+				else { 
+					if (or_flag > 0) {
+						break;
+					}		
 
 
 
