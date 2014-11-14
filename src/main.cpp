@@ -13,6 +13,71 @@
 using namespace std;
 using namespace boost;
 
+/*
+#define TOKEN tokenizer<char_separator<char>>
+#define seperator char_seperator<char>
+
+const char semicolon[] = ";";
+const char ands[] = "&&";
+const char ors[] = "||";
+
+*/
+
+int main() {
+
+	while(1) {
+		string userid = getlogin();
+		if (NULL == getlogin()) {
+			perror("Getlogin() could not retreive a username.");
+		}
+		char hostname[256];
+		if (-1 == gethostname(hostname, sizeof(hostname))) {
+			perror("Gethostname() could not retreive a hostname.");
+		}
+		
+		cout << userid << "@" << hostname << "$ ";
+
+		string commands;
+		int and_flag = 0;
+		int or_flag = 0;
+		int i_flag = 0;
+		int o_flag = 0;
+		int oo_flag = 0;
+		int pipe_flag = 0;
+
+		getline(cin, commands);														//get user input
+		char* saveptr1;
+		char* saveptr2;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <iostream>
+#include <sys/types.h>		//fork, waitpid
+#include <unistd.h>			//fork, execvp
+#include <sys/wait.h>		//waitpid
+#include <errno.h>			//perror
+#include <stdio.h>			//perror, exit 
+#include <boost/tokenizer.hpp>	//for parsing
+#include <string>
+#include <string.h>
+#include <cstring>
+#include <vector>
+#include <stdlib.h>
+using namespace std;
+using namespace boost;
+
 int main() {
 
 	while(1) {
