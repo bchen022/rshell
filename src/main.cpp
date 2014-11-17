@@ -77,21 +77,22 @@ int main() {
 					first_rshell_flag = 1;
 					tok_this = ors;
 				}
-//				else {
+				else {
 					//piping
-//					pipe_flag = 1;
-//				}
+					pipe_flag = 1;
+					tok_this = pipes;
+				}
 			}
 			if (c_commands[cmtfind] == ';'){
 				first_rshell_flag = 1;
 				tok_this = semicolon;
 			}
-/*			if (c_commands[cmtfind] == '<') {
+			if (c_commands[cmtfind] == '<') {
 				//input redirection
 				i_flag = 1;
 				tok_this = inputs;
 			}
-			if (c_commands[cmtfind] == '>') {
+/*			if (c_commands[cmtfind] == '>') {
 				if (c_commands[cmtfind + 1 ] == '>') {
 					//>> don't delete whats in the file (the file you are redirecting the output into)
 					oo_flag = 1;
@@ -123,12 +124,7 @@ int main() {
 				else if (pid == 0) {
 					argv_vect.clear();
 					argv_vect.push_back(*it);
-			/*		if (argv_vect.size() > 0) {
-						for (unsigned argv_ctr = 0; argv_ctr < argv_vect.size(); ++argv_ctr) {
-							cout << "contents of argv_vect1: " << argv_vect.at(argv_ctr) << endl;
-						}
-					}
-			*/			
+	
 					char* argv[80];
 					SEPARATOR sep2(" ");
 					TOKEN tok2(argv_vect.back(), sep2);
@@ -169,12 +165,109 @@ int main() {
 	
 		else {
 			//parse by |, then by space? 
+			//one step at a time nigga
+			tok_this = pipes;
+			string tok_this2;
+			SEPARATOR sep(tok_this.c_str());
+			TOKEN tok(commands, sep);
+			vector<string> argv_vect;
+			vector<string> argv_vect2;
+			char* argv[80];
+			unsigned j = 0;
+			for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it, ++j) {
+				if ((*it) == "exit") {
+					exit(1);
+				}
+				argv_vect.push_back(*it);
+				char* pipe_tok = argv_vect.back().c_str();
+				for (unsigned flag_find = 0; flag_find < strlen(pipe_tok); ++flag_find) {
+					if (pipe_tok[flag_find] == '<') {
+						i_flag = 1;
+						tok_this = inputs;
+					}
+					if (pipe_tok[flag_find] == '>') {
+						if (pipe_tok[flag_find + 1] == '>') {
+							oo_flag = 1;
+							tok_this = outputs_keep;
+						}
+						else {
+							o_flag = 1;
+							tok_this = outputs_change;
+						}
+					}
+				}
+		
+				if (i_flag > 0 || o_flag > 0 || oo_flag > 0) {
+					SEPARATOR sep2(tok_this.c_str());
+					TOKEN tok2(argv_vect.back(), sep2);
+					unsigned j = 0;
+					TOKEN::iterator it2 = tok2.begin();
+					if ((*it2) == "exit") {
+						exit(1);
+					}			
+					for (it2 = tok2.begin(); it2 != tok2.end(); ++it2) {
+						argv_vect2.push_back(*it2);
+						SEPARATOR sep3(" ");
+						TOKEN tok3(argv_vect2.back(), sep3);
+						for (TOKEN:: iterator it3 = tok3.begin(); it3 != tok3.end(); ++it3, ++j) {
+							argv[j] = new char[(*it3).size() + 1];
+							strcpy(argv[j], (*it3).c_str());					
+						}
+					}
+					argv[j] = NULL;
+					
+					//now that argv is set, set up redirections for execvp
+					if (i_flag > 0) {
+
+					}
+
+					if (-1 == execvp(argv[0], argv)) {
+						perror("There was an error in execvp");
+						exit(1);
+					}			
+				}
+			}
+			
+			www.cise.ufl.edu/class/cop4600sp12/dsslides/shell(6).pdf
+			stackoverflow.com/questions/3930339/implementing-pipes-in-a-c-shell-unix
+
+	
 
 
 
-			int fd_of_ifile[2];							//array that holds the fd of read/write of the created ifile
-			if (-1 == pipe(fd_of_ifile)) {				//now fd_of_imaginary_file[0] = read end of the pipe
-				perror("Could not pipe.");				//fd_of_imaginary_file[1] = write end of the pipe
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			int fd_i[2];							//array that holds the fd of read/write of the created ifile
+			if (-1 == pipe(fd_i)) {					//now fd_i[0] for reading from the pipe
+				perror("Could not pipe.");			//fd_i[1] for writing from the pipe
 			}
 			int pid_pipe = fork();
 			if (pid_pipe == -1) {
@@ -182,61 +275,161 @@ int main() {
 				exit(1);
 			}
 			else if (pid_pipe == 0) {
-				if (input_flag > 0) {
-					int fd0 = open(filename, O_RDONLY, 00700);			//open() on file
+				//open on file/close so you can set stdin to the file
+				//setting stdin to the file might be required regardless of '<' in the command line
+				if (i_flag > 0) {
 					if (-1 == close(0)) {
 						perror("Could not close stdin.");
 					}
+					int fd0 = open(filename.c_str(), O_RDONLY | O_CREAT, 00700);	//fd0 is the file 
 					//set stdin to the file
-					if (-1 == dup2(fd0, 0)){					//stdin becomes the read end of the pipe (should it be the file?)
-						perror("Error with setting stdin to the file");
+					if (-1 == dup2(fd0, 0)){					//stdin becomes the read end of the file
+						perror("Error with setting stdin to be the read end of the file.");
 					}
 				}
-				
-				//--------------------------------------------------------------------------------------------------
+
+				//-------------------------------------------------------------------------------------
 				//make stdout the write end of the pipe to set up a pipe between the parent and child process
 				if (-1 == close(1)) {
 					perror("Could not close stdout.");		
 				}
-				if (-1 == dup2(fd_of_ifile[1], 1)) { 		//stdout becomes the write end of the pipe*/
+				if (-1 == dup2(fd_i[1], 1)) { 		//stdout becomes the write end of the pipe*/
 					perror("Error with making stdout to the write end of pipe.");
 				}
-				if (-1 == close(fd_of_ifile[0])) {			//don't need the read end of pipe for now
+/*				if (-1 == close(fd_i[0])) {			//don't need the read end of pipe for now
 					perror("Error with closing read of end of pipe.");
 				}
-
-				//-------------------------------------------------------------------------------------------------
+*/
 				if (-1 == execvp(argv[0], argv)) {
 					perror("Error with execvp.");
 				}
-				
-				exit(1); //not sure if we need this
-		
+				//exit(1); //not sure if we need this
 			}
 
 			else (pid_pipe > 0) {
-				int true_stdin;
+/*				//mike said to never change file descriptors in the parent process
+ 				int true_stdin;
 				if (-1 == (true_stdin = dup(0))) { 			//needed to restore for later on
 					perror("Could not save the actual stdin.");
 				}
-				
-				//make stdin the read end of the pipe to set up a pipe between the parent and child process
-				if (-1 == dup2(fd_of_ifile[0], 0)) {		//stdin becomes the read end of the pipe
-					perror("Error with making stdin to the read end of pipe.");
-				}
-				if (-1 == close(fd_of_ifile[1])) {			//dont need the write end of pipe for now
-					perror("Error with closing the write end of pipe.");
-				}
+*/				
 				if (-1 == wait(0)) {						//do we need status
 					perror("Error with wait.");
 				}
+				
+				int fd_i2[2];
+				if (-1 == pipe(fd_i2)) {
+					perror("Could not pipe2.");
+				}
+				
+				int pid_pipe2 = fork();
+				if (-1 == pid_pipe2) {
+					perror("Error in fork for pip2.");
+					exit(1);
+				}
+				else if (pip_pipe2 == 0) {
+					//set stdout to the file, not sure if necessary just like when setting the file as stdin
+					if (o_flag > 0) {
+						if (-1 == close(1)) {
+							perror("Could not close stdout.");
+						}				
+						int fd1 = open(filename.c_str(), O_WRONLY | O_CREAT, 00700);
+						//set stdout to the file
+						if (-1 == dup2(fd1, 1)){	//makes newfd into the oldfd; makes stdout to fd1
+							perror("Error with setting stdout to be the write end of file.");
+						}
+					}
+					if (oo_flag > 0) {
+						int fd1_1 = open(filename.c_str(), O_WRONLY | O_CREAT | O_APPEND, 00700);
+						if (-1 == close(1)) {
+							perror("Could not close stdout for >>.");
+						}
+						//set stdout to the file
+						if (-1 == dup2(fd1, 1)){
+							perror("Error with assigning the write end of file to stdout.");
+						}
+					}
 
+					//----------------------------------------------------------------------	
+					//make stdin the read end of the pipe to set up a pipe between the parent and child process
+					if (-1 == close(0)) {
+						perror("Could not close stdin.");
+					}
+					if (-1 == dup2(fd_i[0], 0)) {		//stdin becomes the read end of the pipe
+						perror("Error with making stdin to the read end of pipe.");
+					}
+/*					if (-1 == close(fd_i[1])) {			//dont need the write end of pipe for now
+						perror("Error with closing the write end of pipe.");
+					}
+*/
+					//--------------------------------------------------------------------------	
+					//make stdout the the write end of the second pipe
+					if (-1 == dup2(fd_i2[1], 1)) {
+						perror("Error withing making stdout into the write end of the second pipe.");
+					}
+				}
 
+				else if (pid_pipe2 > 0) {
+					if (-1 == wait(0)) {
+						perror("Error with wait2.");
+					}
+				}
 			}
-
-
-
-
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
