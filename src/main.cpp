@@ -46,6 +46,7 @@ int main() {
 		string pipes = "|";
 
 		int first_rshell_flag = 0;
+		int new_rshell_flag = 0;
 		int and_flag = 0;
 		int or_flag = 0;
 		int i_flag = 0;
@@ -81,6 +82,7 @@ int main() {
 				else {
 					//piping
 					pipe_flag = 1;
+					new_rshell_flag = 1;
 					++num_of_pipes_left;
 					tok_this = pipes;
 				}
@@ -92,22 +94,30 @@ int main() {
 			if (c_commands[cmtfind] == '<') {
 				//input redirection
 				i_flag = 1;
+				new_rshell_flag = 1;
 				tok_this = inputs;
 			}
-/*			if (c_commands[cmtfind] == '>') {
+			if (c_commands[cmtfind] == '>') {
 				if (c_commands[cmtfind + 1 ] == '>') {
 					//>> don't delete whats in the file (the file you are redirecting the output into)
 					oo_flag = 1;
+					new_rshell_flag = 1;
+					tok_this = outputs_keep;
 				}
 				else {
 					//> delete whats in the file you are redirecting into
 					o_flag = 1;
+					new_rshell_flag = 1;
+					tok_this = outputs_change;
 				}
 			}
-*/
+		}
+		if (first_rshell_flag == 0 && new_rshell_flag == 0) {
+			first_rshell_flag = 1;
 		}
 		
-		if (first_rshell_flag > 0) {	
+		if (first_rshell_flag > 0) {
+			cout << "old" << endl;
 			SEPARATOR sep(tok_this.c_str());
 			TOKEN tok(commands, sep);
 			vector<string> argv_vect;
@@ -166,6 +176,7 @@ int main() {
 		}	
 	
 		else {
+			cout << "new" << endl;
 			int redirection_flag = 0;
 			tok_this = pipes;
 			string tok_this2;
@@ -257,9 +268,28 @@ int main() {
 					}
 				}
 
-				if (pipe_flag == 0){
-					if (-1 == execvp(argv[0], argv)){
-						perror("Error with execvp(no pipes)");
+				if (pipe_flag == 0) {
+					//std in becomes old so getline does not prompt the user
+					int status2 = 0;
+					int pid_no_pipe = fork();
+					if (-1 == pid_no_pipe) {
+						perror("Could not fork.");
+						exit(1);
+					}
+					else if (pid_no_pipe == 0) {
+						if (-1 == execvp(argv[0], argv)) {			//after execvp runs, the whole program ends
+							perror("Error with execvp(no pipes)");
+						}
+					}
+					else {
+						if (-1 == wait(&status2)) {
+							perror("Could not wait.");
+							exit(1);
+						}
+						if (WEXITSTATUS(status2) == 0) {
+							cout << "child exited normally." << endl;
+							break;
+						}
 					}
 				}
 				else {
@@ -303,46 +333,48 @@ int main() {
 								perror("Error with wait.");
 							}
 							//recursive call here? no because you still need to connect the other end of fd_i
-							
-							int fd_i2[2];
-							if (-1 == pipe(fd_i2)) {
-								perror("Could not pipe2.");
+	
+							//make stdin the read end of the pipe to set up a pipe between the parent and child process
+							if (-1 == close(0)) {
+								perror("Could not close stdin.");
 							}
-						
-							int pid_pipe2 = fork();
-							if (-1 == pid_pipe2) {
-								perror("Error in fork for pip2.");
-								exit(1);
+							if (-1 == dup2(fd_i[0], 0)) {		//stdin becomes the read end of the pipe
+								perror("Error with making stdin to the read end of pipe.");
+							}
+							if (-1 == close(fd_i[1])) {			//dont need the write end of pipe for now
+								perror("Error with closing the write end of pipe.");
+							}
+							//first pipe is now established					
+							
+							num_of_pipes_left--;							
+							
+							if (num_of_pipes_left > 0) {
+								int fd_i2[2];
+								if (-1 == pipe(fd_i2)) {
+									perror("Could not pipe2.");
 								}
-							else if (pid_pipe2 == 0) {
-								//make stdin the read end of the pipe to set up a pipe between the parent and child process
-								if (-1 == close(0)) {
-									perror("Could not close stdin.");
-								}
-								if (-1 == dup2(fd_i[0], 0)) {		//stdin becomes the read end of the pipe
-									perror("Error with making stdin to the read end of pipe.");
-								}
-								if (-1 == close(fd_i[1])) {			//dont need the write end of pipe for now
-									perror("Error with closing the write end of pipe.");
-								}
-								//first pipe is now established
-
-								//make stdout the the write end of the second pipe if we need to keep piping
-								if (num_of_pipes_left == 0) {
-									if (-1 == dup2(savestdout, 1)) {
-										perror("Error withing making stdout into the write end of the second pipe.");
+							
+								int pid_pipe2 = fork();
+								if (-1 == pid_pipe2) {
+									perror("Error in fork for pip2.");
+									exit(1);
 									}
-								}
-								else {
-									//recursion 
+								else if (pid_pipe2 == 0) {
+									//make stdout the the write end of the second pipe if we need to keep piping
 									if (-1 == dup2(fd_i2[1], 1)) {
 										perror("Error withing making stdout into the write end of the second pipe.");
 									}
 								}
+								else if (pid_pipe2 > 0) {
+									if (-1 == wait(0)) {
+										perror("Error with wait2.");
+									}
+								}
 							}
-							else if (pid_pipe2 > 0) {
-								if (-1 == wait(0)) {
-									perror("Error with wait2.");
+
+							else if (num_of_pipes_left == 0) {
+								if (-1 == dup2(savestdout, 1)) {
+									perror("Error withing making stdout into the write end of the second pipe.");
 								}
 							}
 						}//parent branch of first fork
