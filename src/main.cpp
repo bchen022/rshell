@@ -276,7 +276,11 @@ int main() {
 						perror("Could not close stdin.");
 						exit(1);
 					}
-					int fd0 = open(argv[1], O_RDONLY, 00700);	//fd0 is the file, argv[1] is the file
+					int fd0 = open(argv[1], O_RDONLY, 00700);
+					if (fd0 == -1) {
+						perror("Could not open file with file descriptors.");
+						exit(1);
+					}
 					if (-1 == dup2(fd0, 0)){					//stdin becomes the read end of the file
 						perror("Error with setting stdin to be the file.");
 						exit(1);
@@ -287,7 +291,11 @@ int main() {
 						perror("Could not close stdout.");
 						exit(1);
 					}
-					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT | O_TRUNC, 00700); 
+					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT | O_TRUNC, 00700);
+					if (fd1 == -1) {
+						perror("Could not open file with file descriptors.");
+						exit(1);
+					}
 					if (-1 == dup2(fd1, 1)) {
 						perror("Error with setting stdout to be the file.");
 						exit(1);
@@ -299,6 +307,10 @@ int main() {
 						exit(1);
 					}
 					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT | O_APPEND, 00700);
+					if (fd1 == -1) {
+						perror("Could not open file with file descriptors.");
+						exit(1);
+					}
 					if (-1 == dup2(fd1, 1)) {
 						perror("Error with setting stdout2 to be the file.");
 						exit(1);
