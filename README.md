@@ -27,7 +27,8 @@ we called "rshell". It displays the currently logged in user as well
 as the name of the machine the user is logged into, followed by the 
 command prompt '$'. The rshell then takes in commands from the user,
 being able to execute the commands that a normal shell would
-be able to execute. It is able to accept multiple commands at once.
+be able to execute. It is able to accept multiple commands at once as well
+as being able to accept piping and io redirection.
 
 However, there are bugs in this program:
 
@@ -45,9 +46,19 @@ However, there are bugs in this program:
 
 7) After running rshell within itself multiple times, resources will become temporarily unavailable.
 
-8) Commands with single connectors (|, &) will run both commands that are connected.
+8) Command with the single connector (&) will run both commands that are connected.
 
 9) Arrow keys will not work within the shell.
+
+10) The shell can take in multiple connectors in one command line, but only if the connectors are of one type.
+
+11) The shell can either only take in either commands with connectors or commands with io redirection + piping, not both.
+
+12) Cannot handle < and >/>> in the same line without pipes. (e.g. cat < testfile > newfile1). Goes into infinite loop.
+
+13) If the command is an input redirection but the user does not provide a file, the whole shell will exit instead of reprompting the user.
+
+14) Parts of the text in the file that receives the output redirection may randomly be placed into the directory.
 
 ======================================================================
 Summary (ls)
