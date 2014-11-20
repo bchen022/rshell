@@ -93,20 +93,20 @@ int main() {
 			}
 			if (c_commands[cmtfind] == '<') {
 				//input redirection
-				i_flag = 1;
+//				i_flag = 1;
 				new_rshell_flag = 1;
 				tok_this = inputs;
 			}
 			if (c_commands[cmtfind] == '>') {
 				if (c_commands[cmtfind + 1 ] == '>') {
 					//>> don't delete whats in the file (the file you are redirecting the output into)
-					oo_flag = 1;
+//					oo_flag = 1;
 					new_rshell_flag = 1;
 					tok_this = outputs_keep;
 				}
 				else {
 					//> delete whats in the file you are redirecting into
-					o_flag = 1;
+//					o_flag = 1;
 					new_rshell_flag = 1;
 					tok_this = outputs_change;
 				}
@@ -211,18 +211,22 @@ int main() {
 						i_flag = 1;
 						tok_this = inputs;
 						redirection_flag = 1;
+						break;
 					}
 					if (pipe_tok[flag_find] == '>') {
 						if (pipe_tok[flag_find + 1] == '>') {
 							oo_flag = 1;
 							tok_this = outputs_keep;
 							redirection_flag = 1;
+							break;
 						}
 						else {
 							o_flag = 1;
 							tok_this = outputs_change;
 							redirection_flag = 1;
+							break;
 						}
+						break;
 					}
 				}
 				if (redirection_flag == 0) {
@@ -242,11 +246,12 @@ int main() {
 					TOKEN tok3(argv_vect2.back(), sep3);
 					TOKEN:: iterator it3 = tok3.begin();
 					for (it3; it3 != tok3.end(); ++it3, ++j) {
+//						cout << "argv: " << (*it3) << endl;
 						argv[j] = new char[(*it3).size() + 1];
 						strcpy(argv[j], (*it3).c_str());					
 					}
 				}
-				if (o_flag > 0 || oo_flag > 0) {
+				if ((o_flag > 0 || oo_flag > 0) && i_flag == 0) {
 					temp_argv[0] = new char[strlen(argv[j-1]) + 1];
 					strcpy(temp_argv[0], argv[j-1]);
 					argv[j-1] = NULL;
@@ -254,12 +259,13 @@ int main() {
 				else {	
 					argv[j] = NULL;
 				}
-				cout << "------------------------" << endl;
-				for (unsigned p = 0; argv[p] != '\0'; ++p) {
-					cout << argv[p] << endl;		
-				}
-				cout << "-------------------------" << endl;
+//				cout << "------------------------" << endl;
+//				for (unsigned p = 0; argv[p] != '\0'; ++p) {
+//					cout << argv[p] << endl;		
+//				}
+//				cout << "-------------------------" << endl;
 				//open on file/close so you can set stdin to the file
+
 				if (i_flag > 0) {
 					if (-1 == close(0)) {
 						perror("Could not close stdin.");
@@ -269,16 +275,16 @@ int main() {
 						perror("Error with setting stdin to be the file.");
 					}
 				}
-				if (o_flag > 0) {
+				else if (o_flag > 0) {
 					if (-1 == close(1)) {
 						perror("Could not close stdout.");
 					}
-					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT, 00700); 
+					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT | O_TRUNC, 00700); 
 					if (-1 == dup2(fd1, 1)) {
 						perror("Error with setting stdout to be the file.");
 					}
 				}
-				if (oo_flag > 0) {
+				else if (oo_flag > 0) {
 					if (-1 == close(1)) {
 						perror("Could not close stdout2.");
 					}
@@ -312,7 +318,7 @@ int main() {
 							if (-1 == dup2(savestdout, 1)) {
 								perror("Could not restore regular std out.");
 							}
-							cout << "child exited normally." << endl;
+//							cout << "child exited normally." << endl;
 							break;
 						}
 					}
