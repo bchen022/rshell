@@ -115,10 +115,10 @@ int main() {
 		if (first_rshell_flag == 0 && new_rshell_flag == 0) {
 			first_rshell_flag = 1;
 		}
-		cout << "number of pipes: " << num_of_pipes_left << endl;
+//		cout << "number of pipes: " << num_of_pipes_left << endl;
 
 		if (first_rshell_flag > 0) {
-			cout << "old" << endl;
+//			cout << "old" << endl;
 			SEPARATOR sep(tok_this.c_str());
 			TOKEN tok(commands, sep);
 			vector<string> argv_vect;
@@ -177,7 +177,7 @@ int main() {
 		}	
 	
 		else {
-			cout << "new" << endl;
+//			cout << "new" << endl;
 			int savestdin;
 			int savestdout;
 			if (-1 == (savestdin = dup(0))) {
@@ -194,6 +194,7 @@ int main() {
 			vector<string> argv_vect;
 			vector<string> argv_vect2;
 			char* argv[80];
+			char* temp_argv[80];
 			unsigned j = 0;
 /**/		for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it, ++j) {
 				if ((*it) == "exit") {
@@ -239,13 +240,25 @@ int main() {
 					argv_vect2.push_back(*it2);
 					SEPARATOR sep3(" ");
 					TOKEN tok3(argv_vect2.back(), sep3);
-					for (TOKEN:: iterator it3 = tok3.begin(); it3 != tok3.end(); ++it3, ++j) {
+					TOKEN:: iterator it3 = tok3.begin();
+					for (it3; it3 != tok3.end(); ++it3, ++j) {
 						argv[j] = new char[(*it3).size() + 1];
 						strcpy(argv[j], (*it3).c_str());					
 					}
 				}
-				argv[j] = NULL;
-				
+				if (o_flag > 0 || oo_flag > 0) {
+					temp_argv[0] = new char[strlen(argv[j-1]) + 1];
+					strcpy(temp_argv[0], argv[j-1]);
+					argv[j-1] = NULL;
+				}	
+				else {	
+					argv[j] = NULL;
+				}
+				cout << "------------------------" << endl;
+				for (unsigned p = 0; argv[p] != '\0'; ++p) {
+					cout << argv[p] << endl;		
+				}
+				cout << "-------------------------" << endl;
 				//open on file/close so you can set stdin to the file
 				if (i_flag > 0) {
 					if (-1 == close(0)) {
@@ -260,7 +273,7 @@ int main() {
 					if (-1 == close(1)) {
 						perror("Could not close stdout.");
 					}
-					int fd1 = open(argv[1], O_WRONLY | O_CREAT, 00700);
+					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT, 00700); 
 					if (-1 == dup2(fd1, 1)) {
 						perror("Error with setting stdout to be the file.");
 					}
@@ -269,7 +282,7 @@ int main() {
 					if (-1 == close(1)) {
 						perror("Could not close stdout2.");
 					}
-					int fd1 = open(argv[1], O_WRONLY | O_CREAT | O_APPEND, 00700);
+					int fd1 = open(temp_argv[0], O_RDONLY | O_WRONLY | O_CREAT | O_APPEND, 00700);
 					if (-1 == dup2(fd1, 1)) {
 						perror("Error with setting stdout2 to be the file.");
 					}
