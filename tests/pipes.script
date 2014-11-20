@@ -1,0 +1,72 @@
+Script started on Thu 20 Nov 2014 01:34:22 PM PST
+~
+bchen022@hammer $ cd cs100/rshell
+~/cs100/rshell
+bchen022@hammer $ ls
+LICENSE  Makefile  README.md  [0m[01;34msrc[0m/  [01;34mtests[0m/
+[m~/cs100/rshell
+bchen022@hammer $ make
+([ ! -d bin ] && mkdir bin) || [ -d bin ]
+g++ -W -Wall -Werror -ansi -pedantic src/main.cpp -o bin/rshell
+([ ! -d bin ] && mkdir bin) || [ -d bin ]
+g++ -W -Wall -Werror -ansi -pedantic src/cp.cpp -o bin/cp
+([ ! -d bin ]  && mkdir bin) || [ -d bin ]
+g++ -W -Wall -Werror -ansi -pedantic src/ls.cpp -o bin/ls
+~/cs100/rshell
+bchen022@hammer $ cd c[Ksrc
+~/cs100/rshell/src
+bchen022@hammer $ ../bin/rshell
+bchen022@hammer.cs.ucr.edu$ cat testfile
+this is the test file.
+bchen022@hammer.cs.ucr.edu$ cat < testfile
+this is the test file.
+bchen022@hammer.cs.ucr.edu$ cat     cat testout
+hello
+goodbye
+bchen022@hammer.cs.ucr.edu$ ca  echo append this >  > testout
+bchen022@hammer.cs.ucr.edu$ cat testout
+hello
+goodbye
+append this
+bchen022@hammer.cs.ucr.edu$ echo replace everything > testout
+bchen022@hammer.cs.ucr.edu$ cat testout
+replace everything
+bchen022@hammer.cs.ucr.edu$ cat < testfile | tr a-z A-Z
+THIS IS THE TEST FILE.
+bchen022@hammer.cs.ucr.edu$ cat < testfile | tr a-z A-Z | tee newfile1
+THIS IS THE TEST FILE.
+bchen022@hammer.cs.ucr.edu$ ls
+1  a.out  cp.cpp  ls.cpp  main.cpp  newfile1  testfile	testout
+bchen022@hammer.cs.ucr.edu$ cat newfile1
+THIS IS THE TEST FILE.
+bchen022@hammer.cs.ucr.edu$ rm newfile1
+bchen022@hammer.cs.ucr.edu$ ls
+1  a.out  cp.cpp  ls.cpp  main.cpp  testfile  testout
+bchen022@hammer.cs.ucr.edu$ cat < testfile | tr a-z A-Z | tee newfile1 | tr A-Z a-z > newfile2
+bchen022@hammer.cs.ucr.edu$ ls
+1  a.out  cp.cpp  ls.cpp  main.cpp  newfile1  newfile2	testfile  testout
+bchen022@hammer.cs.ucr.edu$ cat newfile1
+THIS IS THE TEST FILE.
+bchen022@hammer.cs.ucr.edu$ cat newfile2
+this is the test file.
+bchen022@hammer.cs.ucr.edu$ cat testout
+replace everything
+bchen022@hammer.cs.ucr.edu$ cat < testfile | tr a-z A-Z | tee newfile1 | tr A-Z a-z >  > testout
+bchen022@hammer.cs.ucr.edu$ cat t     ls
+1  a.out  cp.cpp  ls.cpp  main.cpp  newfile1  newfile2	testfile  testout
+bchen022@hammer.cs.ucr.edu$ cat testout
+replace everything
+this is the test file.
+bchen022@hammer.cs.ucr.edu$ rm newfile1
+bchen022@hammer.cs.ucr.edu$ rm newfile2
+bchen022@hammer.cs.ucr.edu$ cat < testfile | tr a-z A-Z | tee newfile1 | tr A-Z a-z > testout
+bchen022@hammer.cs.ucr.edu$ ls
+1  a.out  cp.cpp  ls.cpp  main.cpp  newfile1  testfile	testout
+bchen022@hammer.cs.ucr.edu$ cat testout
+this is the test file.
+bchen022@hammer.cs.ucr.edu$ exit
+~/cs100/rshell/src
+bchen022@hammer $ exit
+exit
+
+Script done on Thu 20 Nov 2014 01:37:36 PM PST
