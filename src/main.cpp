@@ -115,7 +115,8 @@ int main() {
 		if (first_rshell_flag == 0 && new_rshell_flag == 0) {
 			first_rshell_flag = 1;
 		}
-		
+		cout << "number of pipes: " << num_of_pipes_left << endl;
+
 		if (first_rshell_flag > 0) {
 			cout << "old" << endl;
 			SEPARATOR sep(tok_this.c_str());
@@ -238,7 +239,18 @@ int main() {
 				argv[j] = NULL;
 			
 				//now that argv is set, check if there are pipes; if there are, set up pipes
-	
+						
+				int savestdin;
+				int savestdout;
+				if (i_flag > 0 || o_flag > 0 || oo_flag > 0) {
+					if (-1 == (savestdin = dup(0))) {
+						perror("Could not create restoring point of stdin.");
+					}
+					if (-1 == (savestdout = dup(1))) {
+						perror("Could not create restoring point of stdout.");
+					}
+				}
+
 				//open on file/close so you can set stdin to the file
 				if (i_flag > 0) {
 					if (-1 == close(0)) {
@@ -268,7 +280,7 @@ int main() {
 					}
 				}
 
-				if (pipe_flag == 0) {
+				if (num_of_pipes_left == 0) {
 					//std in becomes old so getline does not prompt the user
 					int status2 = 0;
 					int pid_no_pipe = fork();
@@ -287,22 +299,33 @@ int main() {
 							exit(1);
 						}
 						if (WEXITSTATUS(status2) == 0) {
+							
+				//			if (i_flag > 0) {
+								if (-1 == dup2(savestdin, 0)) {
+									perror("Could not restore regular std in.");
+								}
+				//				i_flag = 0;
+				//			}
+				//			if (o_flag > 0 || oo_flag > 0) {
+								if (-1 == dup2(savestdout, 1)) {
+									perror("Could not restore regular std out.");
+								}
+				//				if (o_flag > 0) {
+				//					o_flag = 0;
+				//				}
+				//				if (oo_flag > 0) {
+				//					oo_flag = 0;
+				//				}
+				//			}
+
+
 							cout << "child exited normally." << endl;
 							break;
 						}
 					}
 				}
 				else {
-					int savestdin;
-					int savestdout;
-
-					if (-1 == (savestdin = dup(0))) {
-						perror("Could not create restoring point of stdin.");
-					}
-					if (-1 == (savestdout = dup(1))) {
-						perror("Could not create restoring point of stdout.");
-					}
-					
+					int status3 = 0;
 					int fd_i[2];							//array that holds the fd of read/write of the created ifile
 					if (-1 == pipe(fd_i)) {					//now fd_i[0] for reading from the pipe
 						perror("Could not pipe.");			//fd_i[1] for writing from the pipe
@@ -329,7 +352,7 @@ int main() {
 							}
 						}
 						else if (pid_pipe > 0) {
-							if (-1 == wait(0)) {						//do we need status
+							if (-1 == wait(&status3)) {						//do we need status
 								perror("Error with wait.");
 							}
 							//recursive call here? no because you still need to connect the other end of fd_i
@@ -346,39 +369,20 @@ int main() {
 							}
 							//first pipe is now established					
 							
-							num_of_pipes_left--;							
-							
-							if (num_of_pipes_left > 0) {
-								int fd_i2[2];
-								if (-1 == pipe(fd_i2)) {
-									perror("Could not pipe2.");
-								}
-							
-								int pid_pipe2 = fork();
-								if (-1 == pid_pipe2) {
-									perror("Error in fork for pip2.");
-									exit(1);
-									}
-								else if (pid_pipe2 == 0) {
-									//make stdout the the write end of the second pipe if we need to keep piping
-									if (-1 == dup2(fd_i2[1], 1)) {
-										perror("Error withing making stdout into the write end of the second pipe.");
-									}
-								}
-								else if (pid_pipe2 > 0) {
-									if (-1 == wait(0)) {
-										perror("Error with wait2.");
-									}
-								}
-							}
-
-							else if (num_of_pipes_left == 0) {
-								if (-1 == dup2(savestdout, 1)) {
-									perror("Error withing making stdout into the write end of the second pipe.");
+							num_of_pipes_left--;
+							if (num_of_pipes_left == 0) {
+								i_flag = 0;
+								o_flag = 0;
+								oo_flag = 0;
+								if (-1 == dup2(savestdout,1)){
+									perror("Could not restore regular stdout.");
 								}
 							}
 						}//parent branch of first fork
 					}//while pipes are up
+
+
+
 				}//if pipes are up
 			}//first tokenizer
 		}//new rshell branch		
@@ -407,5 +411,51 @@ int main() {
 
 
 
+
+							
+/*							if (num_of_pipes_left > 0) {
+								int fd_i2[2];
+								if (-1 == pipe(fd_i2)) {
+									perror("Could not pipe2.");
+								}
+							
+								int pid_pipe2 = fork();
+								if (-1 == pid_pipe2) {
+									perror("Error in fork for pip2.");
+									exit(1);
+									}
+								else if (pid_pipe2 == 0) {
+									//make stdout the the write end of the second pipe if we need to keep piping
+									if (-1 == dup2(fd_i2[1], 1)) {
+										perror("Error withing making stdout into the write end of the second pipe.");
+									}
+								}
+								else if (pid_pipe2 > 0) {
+									if (-1 == wait(&status3)) {
+										perror("Error with wait2.");
+									}
+									
+									if (WEXITSTATUS(status3) == 0) {
+										if (i_flag > 0) {
+											if (-1 == dup2(savestdin, 0)){
+												perror("Could not restore regular stdin.");
+											}
+											i_flag = 0;
+										}
+										if (o_flag > 0 || oo_flag > 0) {
+											if (-1 == dup2(savestdout, 0)) {
+												perror("Could not restore regular stdin.");
+											}
+										}
+									}
+								}
+							}
+*/
+/*							if (num_of_pipes_left == 0) {
+								if (-1 == dup2(savestdout, 1)) {
+									perror("Error withing making stdout into the write end of the second pipe.");
+								}
+							}
+*/						
 
 
