@@ -178,6 +178,14 @@ int main() {
 	
 		else {
 			cout << "new" << endl;
+			int savestdin;
+			int savestdout;
+			if (-1 == (savestdin = dup(0))) {
+				perror("Could not create restoring point of stdin.");
+			}
+			if (-1 == (savestdout = dup(1))) {
+				perror("Could not create restoring point of stdout.");
+			}
 			int redirection_flag = 0;
 			tok_this = pipes;
 			string tok_this2;
@@ -237,20 +245,7 @@ int main() {
 					}
 				}
 				argv[j] = NULL;
-			
-				//now that argv is set, check if there are pipes; if there are, set up pipes
-						
-				int savestdin;
-				int savestdout;
-				if (i_flag > 0 || o_flag > 0 || oo_flag > 0) {
-					if (-1 == (savestdin = dup(0))) {
-						perror("Could not create restoring point of stdin.");
-					}
-					if (-1 == (savestdout = dup(1))) {
-						perror("Could not create restoring point of stdout.");
-					}
-				}
-
+				
 				//open on file/close so you can set stdin to the file
 				if (i_flag > 0) {
 					if (-1 == close(0)) {
@@ -281,7 +276,6 @@ int main() {
 				}
 
 				if (num_of_pipes_left == 0) {
-					//std in becomes old so getline does not prompt the user
 					int status2 = 0;
 					int pid_no_pipe = fork();
 					if (-1 == pid_no_pipe) {
@@ -289,7 +283,7 @@ int main() {
 						exit(1);
 					}
 					else if (pid_no_pipe == 0) {
-						if (-1 == execvp(argv[0], argv)) {			//after execvp runs, the whole program ends
+						if (-1 == execvp(argv[0], argv)) {		
 							perror("Error with execvp(no pipes)");
 						}
 					}
@@ -299,26 +293,12 @@ int main() {
 							exit(1);
 						}
 						if (WEXITSTATUS(status2) == 0) {
-							
-				//			if (i_flag > 0) {
-								if (-1 == dup2(savestdin, 0)) {
-									perror("Could not restore regular std in.");
-								}
-				//				i_flag = 0;
-				//			}
-				//			if (o_flag > 0 || oo_flag > 0) {
-								if (-1 == dup2(savestdout, 1)) {
-									perror("Could not restore regular std out.");
-								}
-				//				if (o_flag > 0) {
-				//					o_flag = 0;
-				//				}
-				//				if (oo_flag > 0) {
-				//					oo_flag = 0;
-				//				}
-				//			}
-
-
+							if (-1 == dup2(savestdin, 0)) {
+								perror("Could not restore regular std in.");
+							}
+							if (-1 == dup2(savestdout, 1)) {
+								perror("Could not restore regular std out.");
+							}
 							cout << "child exited normally." << endl;
 							break;
 						}
@@ -330,56 +310,54 @@ int main() {
 					if (-1 == pipe(fd_i)) {					//now fd_i[0] for reading from the pipe
 						perror("Could not pipe.");			//fd_i[1] for writing from the pipe
 					}
-					while(num_of_pipes_left > 0) { 
-						int pid_pipe = fork();
-						if (pid_pipe == -1) {
-							perror("Error in fork for pipe.");
-							exit(1);
+					int pid_pipe = fork();
+					if (pid_pipe == -1) {
+						perror("Error in fork for pipe.");
+						exit(1);
+					}
+					else if (pid_pipe == 0) {
+						//make stdout the write end of the pipe to set up a pipe between the parent and child process
+						if (-1 == close(1)) {
+							perror("Could not close stdout.");		
 						}
-						else if (pid_pipe == 0) {
-							//make stdout the write end of the pipe to set up a pipe between the parent and child process
-							if (-1 == close(1)) {
-								perror("Could not close stdout.");		
-							}
-							if (-1 == dup2(fd_i[1], 1)) { 		//stdout becomes the write end of the pipe*/
-								perror("Error with making stdout to the write end of pipe.");
-							}
-							if (-1 == close(fd_i[0])) {			//don't need the read end of pipe for now
-								perror("Error with closing read of end of pipe.");
-							}
-							if (-1 == execvp(argv[0], argv)) {
-								perror("Error with execvp.");
+						if (-1 == dup2(fd_i[1], 1)) { 		//stdout becomes the write end of the pipe*/
+							perror("Error with making stdout to the write end of pipe.");
+						}
+						if (-1 == close(fd_i[0])) {			//don't need the read end of pipe for now
+							perror("Error with closing read of end of pipe.");
+						}
+						if (-1 == execvp(argv[0], argv)) {
+							perror("Error with execvp.");
+						}
+					}
+					else if (pid_pipe > 0) {
+						if (-1 == wait(&status3)) {						//do we need status
+							perror("Error with wait.");
+						}
+						//recursive call here? no because you still need to connect the other end of fd_i
+
+						//make stdin the read end of the pipe to set up a pipe between the parent and child process
+						if (-1 == close(0)) {
+							perror("Could not close stdin.");
+						}
+						if (-1 == dup2(fd_i[0], 0)) {		//stdin becomes the read end of the pipe
+							perror("Error with making stdin to the read end of pipe.");
+						}
+						if (-1 == close(fd_i[1])) {			//dont need the write end of pipe for now
+							perror("Error with closing the write end of pipe.");
+						}
+						//first pipe is now established					
+						
+						num_of_pipes_left--;
+						i_flag = 0;
+						o_flag = 0;
+						oo_flag = 0;
+						if (num_of_pipes_left == 0) {
+							if (-1 == dup2(savestdout,1)){
+								perror("Could not restore regular stdout.");
 							}
 						}
-						else if (pid_pipe > 0) {
-							if (-1 == wait(&status3)) {						//do we need status
-								perror("Error with wait.");
-							}
-							//recursive call here? no because you still need to connect the other end of fd_i
-	
-							//make stdin the read end of the pipe to set up a pipe between the parent and child process
-							if (-1 == close(0)) {
-								perror("Could not close stdin.");
-							}
-							if (-1 == dup2(fd_i[0], 0)) {		//stdin becomes the read end of the pipe
-								perror("Error with making stdin to the read end of pipe.");
-							}
-							if (-1 == close(fd_i[1])) {			//dont need the write end of pipe for now
-								perror("Error with closing the write end of pipe.");
-							}
-							//first pipe is now established					
-							
-							num_of_pipes_left--;
-							if (num_of_pipes_left == 0) {
-								i_flag = 0;
-								o_flag = 0;
-								oo_flag = 0;
-								if (-1 == dup2(savestdout,1)){
-									perror("Could not restore regular stdout.");
-								}
-							}
-						}//parent branch of first fork
-					}//while pipes are up
+					}//parent branch of first fork
 
 
 
