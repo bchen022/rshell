@@ -25,7 +25,6 @@ using namespace boost;
 int main() {
 	
 	while(1) {
-
 		string userid = getlogin();
 		if (NULL == getlogin()) {
 			perror("Getlogin() could not retreive a username.");
@@ -55,9 +54,32 @@ int main() {
 		int num_of_pipes_left = 0;
 
 		string tok_this;
-
+		vector<string> allpaths;
 		getline(cin, commands);														
-		char* c_commands = new char [commands.length() + 1];						//create a c-string for strtok's argument
+		string env(getenv("PATH"));
+/*		cout << "env: " << env << endl;
+		cout << "--------------------------" << endl;
+*/		string temppath = "";
+		for (unsigned i = 0; i < env.length(); ++i) {
+			if (env.at(i) == ':' || (i == env.length()-1)) {
+				if (i == env.length() - 1) {
+					temppath = temppath + env.at(i);
+				}
+				temppath = temppath.append("/");
+				allpaths.push_back(temppath);
+				temppath = "";
+			}
+			else {
+				temppath = temppath + env.at(i);
+			}
+		}
+
+/*		for (unsigned i = 0; i < allpaths.size(); ++i) {
+			cout << allpaths.at(i) << endl;
+		}
+
+		cout << "----------------------------" << endl;
+*/		char* c_commands = new char [commands.length() + 1];						//create a c-string for strtok's argument
 		strcpy(c_commands, commands.c_str());										//fill in the c-string with user input
 		for (unsigned cmtfind = 0; cmtfind < strlen(c_commands); ++cmtfind) {
 			if (c_commands[cmtfind] == '#') {
@@ -79,7 +101,6 @@ int main() {
 					tok_this = ors;
 				}
 				else {
-					//piping
 					new_rshell_flag = 1;
 					++num_of_pipes_left;
 					tok_this = pipes;
@@ -90,21 +111,15 @@ int main() {
 				tok_this = semicolon;
 			}
 			if (c_commands[cmtfind] == '<') {
-				//input redirection
-//				i_flag = 1;
 				new_rshell_flag = 1;
 				tok_this = inputs;
 			}
 			if (c_commands[cmtfind] == '>') {
 				if (c_commands[cmtfind + 1 ] == '>') {
-					//>> don't delete whats in the file (the file you are redirecting the output into)
-//					oo_flag = 1;
 					new_rshell_flag = 1;
 					tok_this = outputs_keep;
 				}
 				else {
-					//> delete whats in the file you are redirecting into
-//					o_flag = 1;
 					new_rshell_flag = 1;
 					tok_this = outputs_change;
 				}
@@ -113,10 +128,8 @@ int main() {
 		if (first_rshell_flag == 0 && new_rshell_flag == 0) {
 			first_rshell_flag = 1;
 		}
-//		cout << "number of pipes: " << num_of_pipes_left << endl;
 
 		if (first_rshell_flag > 0) {
-//			cout << "old" << endl;
 			SEPARATOR sep(tok_this.c_str());
 			TOKEN tok(commands, sep);
 			vector<string> argv_vect;
@@ -139,24 +152,42 @@ int main() {
 					char* argv[80];
 					SEPARATOR sep2(" ");
 					TOKEN tok2(argv_vect.back(), sep2);
-					unsigned j = 0;
 					TOKEN::iterator it2 = tok2.begin();
 					if ((*it2) == "exit") {
 						exit(1);
-					}			
-					for (it2 = tok2.begin(); it2 != tok2.end(); ++it2, ++j) {
-						argv[j] = new char[(*it2).size() + 1];
-						strcpy(argv[j], (*it2).c_str());
 					}
-		
-					argv[j] = NULL;
-					
-					if (-1 == execvp(argv[0], argv)) {
-						perror("There was an error in execvp");
-						exit(1);
+
+					while (allpaths.size() > 0) {
+						unsigned first_argv = 0;
+						unsigned j = 0;
+						for (it2 = tok2.begin(); it2 != tok2.end(); ++it2, ++j) {
+							string the_arg = (*it2);
+							if (first_argv == 0) {
+								string the_path = allpaths.at(0);
+								the_arg = the_path.append(the_arg);
+								++first_argv;
+							}	
+							argv[j] = new char[the_arg.size() + 1];
+							strcpy(argv[j], (the_arg.c_str()));
+						}
+			
+						argv[j] = NULL;
+	
+/*						cout << "array: " << endl;
+						for (unsigned i = 0; argv[i] != NULL; ++i) {
+							cout << argv[i] << endl;
+						}
+*/	
+						
+						if (-1 == execv(argv[0], argv)) {
+							if (allpaths.size() == 1) {
+								perror("There was an error in execvp");
+								exit(1);
+							}
+						}
+						allpaths.erase(allpaths.begin());
 					}
-				}
-		
+				}	
 				else if (pid != 0) {
 	//				cout << "status of pid : " << pid << endl;
 	//				cout << "status before wait: " << WEXITSTATUS(status) << endl;
@@ -196,15 +227,12 @@ int main() {
 			char* argv[80];
 			char* temp_argv[80];
 			unsigned j = 0;
-/**/		for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it, ++j) {
+			for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it, ++j) {
 				if ((*it) == "exit") {
 					exit(1);
 				}
 				argv_vect.push_back(*it);
-//				cout << "contents of argv_vect: " << endl;
-//				for (unsigned x = 0; x < argv_vect.size(); ++x) {
-//					cout << argv_vect.at(x) << endl;'
-//				}
+
 				const char* pipe_tok = argv_vect.back().c_str();
 				for (unsigned flag_find = 0; flag_find < strlen(pipe_tok); ++flag_find) {
 					if (pipe_tok[flag_find] == '<') {
@@ -246,7 +274,6 @@ int main() {
 					TOKEN tok3(argv_vect2.back(), sep3);
 					TOKEN:: iterator it3 = tok3.begin();
 					for (it3 = tok3.begin(); it3 != tok3.end(); ++it3, ++j) {
-//						cout << "argv: " << (*it3) << endl;
 						argv[j] = new char[(*it3).size() + 1];
 						strcpy(argv[j], (*it3).c_str());					
 					}
@@ -264,13 +291,7 @@ int main() {
 				else {	
 					argv[j] = NULL;
 				}
-//				cout << "------------------------" << endl;
-//				for (unsigned p = 0; argv[p] != '\0'; ++p) {
-//					cout << argv[p] << endl;		
-//				}
-//				cout << "-------------------------" << endl;
-				//open on file/close so you can set stdin to the file
-
+				
 				if (i_flag > 0) {
 					if (-1 == close(0)) {
 						perror("Could not close stdin.");
