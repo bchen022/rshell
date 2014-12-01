@@ -1,6 +1,6 @@
 #include <iostream>
 #include <sys/types.h>		//fork, waitpid, open
-#include <unistd.h>			//fork, execvp
+#include <unistd.h>			//fork, execv
 #include <sys/wait.h>		//waitpid
 #include <errno.h>			//perror
 #include <stdio.h>			//perror, exit 
@@ -22,6 +22,7 @@ using namespace boost;
 #define TOKEN tokenizer<char_separator<char> >
 #define SEPARATOR char_separator<char>
 
+/*
 void sig_int(int sig_num) {
 	flush(cout);
 }
@@ -29,13 +30,13 @@ void sig_stop(int sig_num) {
 	pid_t pid = getpid();
 	kill(pid, SIGSTOP);
 }
-
+*/
 
 int main() {
 	
 	while(1) {
-		signal(SIGINT, sig_int);
-		signal(SIGTSTP, sig_stop);
+//		signal(SIGINT, sig_int);
+//		signal(SIGTSTP, sig_stop);
 		string userid = getlogin();
 		if (NULL == getlogin()) {
 			perror("Getlogin() could not retreive a username.");
@@ -96,7 +97,6 @@ int main() {
 			if (c_commands[cmtfind] == '#') {
 				c_commands[cmtfind] = '\0';
 				commands = commands.substr(0, cmtfind);
-
 			}
 			if (c_commands[cmtfind] == '&') {
 				if (c_commands[cmtfind + 1] == '&') {
@@ -150,7 +150,7 @@ int main() {
 				}
 				if ((*it) == "cd") {
 					char* cwd = new char[1024];
-					char* cwd2 = newchar[1024];
+					char* cwd2 = new char[1024];
 					if (getcwd(cwd, 1024) == NULL) {
 						perror("getcwd");
 					}
@@ -197,16 +197,14 @@ int main() {
 						}
 			
 						argv[j] = NULL;
-	
 /*						cout << "array: " << endl;
 						for (unsigned i = 0; argv[i] != NULL; ++i) {
 							cout << argv[i] << endl;
 						}
 */	
-						
 						if (-1 == execv(argv[0], argv)) {
 							if (allpaths.size() == 1) {
-								perror("There was an error in execvp");
+								perror("execv first shell");
 								exit(1);
 							}
 						}
@@ -217,7 +215,7 @@ int main() {
 	//				cout << "status of pid : " << pid << endl;
 	//				cout << "status before wait: " << WEXITSTATUS(status) << endl;
 					if (-1 == wait(&status)) {
-						perror("Still waiting for child execvp process to end.");
+						perror("child old rshell");
 						exit(1);
 					}
 					if (WEXITSTATUS(status) != 0 && and_flag > 0) {
@@ -227,9 +225,7 @@ int main() {
 						break;
 					}
 				}
-						
 			}
-
 		}	
 	
 		else {
@@ -371,9 +367,25 @@ int main() {
 						exit(1);
 					}
 					else if (pid_no_pipe == 0) {
-						if (-1 == execvp(argv[0], argv)) {		
-							perror("Error with execvp(no pipes)");
-							exit(1);
+/*						cout << "array: " << endl;
+						for (unsigned i = 0; argv[i] != NULL; ++i) {
+							cout << argv[i] << endl;
+						}
+*/						string true_the_arg = argv[0];
+						while (allpaths.size() > 0) {
+							string the_path = allpaths.at(0);
+							string the_arg = true_the_arg;
+							the_arg = the_path.append(the_arg);
+							argv[0] = new char[the_arg.size() + 1];
+							strcpy(argv[0], the_arg.c_str());
+//							cout << "argv[0] full path: " << argv[0] << endl;						
+							if (-1 == execv(argv[0], argv)) {
+								if (allpaths.size() == 1) {
+									perror("Error with execv(no pipes)");
+									exit(1);
+								}
+							}
+							allpaths.erase(allpaths.begin());
 						}
 					}
 					else {
@@ -421,9 +433,21 @@ int main() {
 							perror("Error with closing read of end of pipe.");
 							exit(1);
 						}
-						if (-1 == execvp(argv[0], argv)) {
-							perror("Error with execvp.");
-							exit(1);
+						string true_the_arg = argv[0];
+						while (allpaths.size() > 0) {
+							string the_path = allpaths.at(0);
+							string the_arg = true_the_arg;
+							the_arg = the_path.append(the_arg);
+							argv[0] = new char[the_arg.size() + 1];
+							strcpy(argv[0], the_arg.c_str());
+
+							if (-1 == execv(argv[0], argv)) {
+								if (allpaths.size() == 1) {	
+									perror("Error with execv.");
+									exit(1);
+								}
+							}
+							allpaths.erase(allpaths.begin());
 						}
 					}
 					else if (pid_pipe > 0) {
