@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <fcntl.h> 			//dup, open
 #include <sys/stat.h>		//open
+#include <signal.h>
 
 using namespace std;
 using namespace boost;
@@ -21,10 +22,20 @@ using namespace boost;
 #define TOKEN tokenizer<char_separator<char> >
 #define SEPARATOR char_separator<char>
 
+void sig_int(int sig_num) {
+	flush(cout);
+}
+void sig_stop(int sig_num) {
+	pid_t pid = getpid();
+	kill(pid, SIGSTOP);
+}
+
 
 int main() {
 	
 	while(1) {
+		signal(SIGINT, sig_int);
+		signal(SIGTSTP, sig_stop);
 		string userid = getlogin();
 		if (NULL == getlogin()) {
 			perror("Getlogin() could not retreive a username.");
@@ -136,6 +147,20 @@ int main() {
 			for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it) {
 				if ((*it) == "exit") {
 					exit(1);
+				}
+				if ((*it) == "cd") {
+					char* cwd = new char[1024];
+					char* cwd2 = newchar[1024];
+					if (getcwd(cwd, 1024) == NULL) {
+						perror("getcwd");
+					}
+
+
+
+					if (-1 == chdir(cwd)) {
+						perror("chdir");
+					}
+
 				}
 	
 				int pid = fork();
