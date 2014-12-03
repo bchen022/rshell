@@ -22,7 +22,7 @@ using namespace boost;
 #define TOKEN tokenizer<char_separator<char> >
 #define SEPARATOR char_separator<char>
 
-/*
+
 void sig_int(int sig_num) {
 	flush(cout);
 }
@@ -30,14 +30,15 @@ void sig_stop(int sig_num) {
 	pid_t pid = getpid();
 	kill(pid, SIGSTOP);
 }
-*/
+
 
 int main() {
-	
+	unsigned cd_break = 0;
 	while(1) {
-//		signal(SIGINT, sig_int);
-//		signal(SIGTSTP, sig_stop);
-		string userid = getlogin();
+
+		signal(SIGINT, sig_int);
+		signal(SIGTSTP, sig_stop);
+/*		string userid = getlogin();
 		if (NULL == getlogin()) {
 			perror("Getlogin() could not retreive a username.");
 		}
@@ -45,7 +46,13 @@ int main() {
 		if (-1 == gethostname(hostname, sizeof(hostname))) {
 			perror("Gethostname() could not retreive a hostname.");
 		}
-		cout << userid << "@" << hostname << "$ ";
+		cout << userid << "@" << hostname;
+*/		
+		char* the_cwd = new char[1024];
+		if (getcwd(the_cwd, 1024) == NULL) {
+			perror("getcwd prompt");
+		}
+		cout << the_cwd << "$ ";
 
 		string commands;
 		string semicolon = ";";
@@ -144,25 +151,88 @@ int main() {
 			SEPARATOR sep(tok_this.c_str());
 			TOKEN tok(commands, sep);
 			vector<string> argv_vect;
+			TOKEN::iterator temp_it = tok.begin();
 			for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it) {
 				if ((*it) == "exit") {
+					cout << "1" << endl;
 					exit(1);
 				}
-				if ((*it) == "cd") {
+//				cout << "temp_it: " << *temp_it << endl;
+				if ((*it).at(0) == 'c' && (*it).at(1) == 'd') {
+//					cout << "it is cd" << endl;
+					char* path_cd = new char[1024];	
 					char* cwd = new char[1024];
 					char* cwd2 = new char[1024];
+					unsigned slashindex;
 					if (getcwd(cwd, 1024) == NULL) {
 						perror("getcwd");
 					}
-
-
-
-					if (-1 == chdir(cwd)) {
-						perror("chdir");
+					
+					if ((*it).c_str()[2] == '\0') {
+//						cout << "a" << endl;
+						cwd2 = getenv("HOME");
+						delete [] cwd;
+						path_cd = cwd2;
+					}
+					else if ((*it).at(3) == '.') {
+						if((*it).c_str()[4] == '.') {
+//							cout << "c" << endl;
+							for (unsigned i = 0; cwd[i] != '\0'; ++i) {
+								if (cwd[i] == '/') {
+									slashindex = i;
+								}
+							}
+							for (unsigned i = 0; i < slashindex; ++i) {
+								cwd2[i] = cwd[i];
+							}
+							delete [] cwd;
+							path_cd = cwd2;
+						}
+						else {
+//							cout << "b" << endl;
+							path_cd = cwd;
+						}
+					}
+/*					else if ((*temp_it) == "..") {
+						cout << "c" << endl;
+						for (unsigned i = 0; cwd[i] != '\0'; ++i) {
+							if (cwd[i] == '/') {
+								slashindex = i;
+							}
+						}
+						for (unsigned i = 0; i < slashindex; ++i) {
+							cwd2[i] = cwd[i];
+						}
+						delete [] cwd;
+						path_cd = cwd2;
+					}
+*/					
+					else {
+//						cout << "d" << endl;
+						char* the_full_path2 = new char[1024];
+						unsigned j = 0;
+						for (unsigned i = 3; (*temp_it).c_str()[i] != '\0'; ++i, ++j) {
+							the_full_path2[j] = (*temp_it).c_str()[i];
+						}
+						string the_full_path = the_full_path2;
+						delete [] the_full_path2;
+						char temp[the_full_path.length() + 1];
+						memcpy(temp, the_full_path.c_str(), the_full_path.length());
+						strcpy(cwd2, cwd);
+						strcpy(cwd2, temp);
+						delete [] cwd;
+						path_cd = cwd2;
 					}
 
+//					cout << "path_cd: " << path_cd << endl;
+					if (-1 == chdir(path_cd)) {
+						perror("chdir");
+					}
+					temp_it = tok.begin();
+					cd_break++;
+					//break;
 				}
-	
+
 				int pid = fork();
 				int status = 0;
 				if (-1 == pid) {
@@ -178,46 +248,107 @@ int main() {
 					SEPARATOR sep2(" ");
 					TOKEN tok2(argv_vect.back(), sep2);
 					TOKEN::iterator it2 = tok2.begin();
+//					TOKEN::iterator temp_it2 = tok2.begin();
 					if ((*it2) == "exit") {
+						cout << "2" << endl;
+						exit(1);
+					}
+/*					if ((*it2) == "cd") {
+				//		cout << "right here" << endl;
+						char* path_cd = new char[1024];	
+						char* cwd = new char[1024];
+						char* cwd2 = new char[1024];
+						unsigned slashindex;
+						if (getcwd(cwd, 1024) == NULL) {
+							perror("getcwd");
+						}
+						++temp_it2;
+						if (temp_it2 == tok2.end()) {
+							cwd2 = getenv("HOME");
+							delete [] cwd;
+							path_cd = cwd2;
+						}
+						else if ((*temp_it2) == ".") {
+							path_cd = cwd;
+						}
+						else if ((*temp_it2) == "..") {
+							for (unsigned i = 0; cwd[i] != '\0'; ++i) {
+								if (cwd[i] == '/') {
+									slashindex = i;
+								}
+							}
+							for (unsigned i = 0; i < slashindex; ++i) {
+								cwd2[i] = cwd[i];
+							}
+							delete [] cwd;
+							path_cd = cwd2;
+						}
+						else {
+							string the_full_path = (*temp_it2);
+							char temp[the_full_path.length() + 1];
+							memcpy(temp, the_full_path.c_str(), the_full_path.length());
+
+							strcpy(cwd2, cwd);
+							strcpy(cwd2, temp);
+							delete [] cwd;
+							path_cd = cwd2;
+						}
+
+						if (-1 == chdir(path_cd)) {
+							perror("chdir");
+						}
+						cd_break++;
+						//break;
+					}
+	*/				
+					if (cd_break > 0) {
 						exit(1);
 					}
 
-					while (allpaths.size() > 0) {
-						unsigned first_argv = 0;
-						unsigned j = 0;
-						for (it2 = tok2.begin(); it2 != tok2.end(); ++it2, ++j) {
-							string the_arg = (*it2);
-							if (first_argv == 0) {
-								string the_path = allpaths.at(0);
-								the_arg = the_path.append(the_arg);
-								++first_argv;
-							}	
-							argv[j] = new char[the_arg.size() + 1];
-							strcpy(argv[j], (the_arg.c_str()));
-						}
-			
-						argv[j] = NULL;
-/*						cout << "array: " << endl;
-						for (unsigned i = 0; argv[i] != NULL; ++i) {
-							cout << argv[i] << endl;
-						}
-*/	
-						if (-1 == execv(argv[0], argv)) {
-							if (allpaths.size() == 1) {
-								perror("execv first shell");
-								exit(1);
+					else {
+						while (allpaths.size() > 0) {
+							unsigned first_argv = 0;
+							unsigned j = 0;
+							for (it2 = tok2.begin(); it2 != tok2.end(); ++it2, ++j) {
+								string the_arg = (*it2);
+								if (first_argv == 0) {
+									string the_path = allpaths.at(0);
+									the_arg = the_path.append(the_arg);
+									++first_argv;
+								}	
+								argv[j] = new char[the_arg.size() + 1];
+								strcpy(argv[j], (the_arg.c_str()));
 							}
+				
+							argv[j] = NULL;
+/*							cout << "array: " << endl;
+							for (unsigned i = 0; argv[i] != NULL; ++i) {
+								cout << argv[i] << endl;
+							}
+*/	
+							if (-1 == execv(argv[0], argv)) {
+								if (allpaths.size() == 1) {
+									perror("execv first shell");
+									exit(1);
+								}
+							}
+							allpaths.erase(allpaths.begin());
 						}
-						allpaths.erase(allpaths.begin());
 					}
 				}	
 				else if (pid != 0) {
 	//				cout << "status of pid : " << pid << endl;
 	//				cout << "status before wait: " << WEXITSTATUS(status) << endl;
+					cout << "before the parent." << endl;
 					if (-1 == wait(&status)) {
 						perror("child old rshell");
 						exit(1);
 					}
+					if (cd_break > 0) {
+						cd_break = 0;	
+					}
+
+					cout << "after the wait." << endl;
 					if (WEXITSTATUS(status) != 0 && and_flag > 0) {
 						break;
 					}
