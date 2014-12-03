@@ -24,9 +24,10 @@ using namespace boost;
 
 
 void sig_int(int sig_num) {
-	flush(cout);
+	sig_num++;
 }
 void sig_stop(int sig_num) {
+	sig_num++;
 	pid_t pid = getpid();
 	kill(pid, SIGSTOP);
 }
@@ -154,7 +155,7 @@ int main() {
 			TOKEN::iterator temp_it = tok.begin();
 			for (TOKEN::iterator it = tok.begin(); it != tok.end(); ++it) {
 				if ((*it) == "exit") {
-					cout << "1" << endl;
+//					cout << "1" << endl;
 					exit(1);
 				}
 //				cout << "temp_it: " << *temp_it << endl;
@@ -177,36 +178,40 @@ int main() {
 					else if ((*it).at(3) == '.') {
 						if((*it).c_str()[4] == '.') {
 //							cout << "c" << endl;
-							for (unsigned i = 0; cwd[i] != '\0'; ++i) {
-								if (cwd[i] == '/') {
-									slashindex = i;
+							if ((*it).c_str()[5] == '\0') {
+								for (unsigned i = 0; cwd[i] != '\0'; ++i) {
+									if (cwd[i] == '/') {
+										slashindex = i;
+									}
 								}
+								for (unsigned i = 0; i < slashindex; ++i) {
+									cwd2[i] = cwd[i];
+								}
+								delete [] cwd;
+								path_cd = cwd2;
 							}
-							for (unsigned i = 0; i < slashindex; ++i) {
-								cwd2[i] = cwd[i];
+							else {
+								char* the_full_path2 = new char[1024];
+								unsigned j = 0;
+								for (unsigned i = 3; (*temp_it).c_str()[i] != '\0'; ++i, ++j) {
+									the_full_path2[j] = (*temp_it).c_str()[i];
+								}
+								string the_full_path = the_full_path2;
+								delete [] the_full_path2;
+								//char* temp = new char[the_full_path.length() + 1];
+								//memcpy(temp, the_full_path.c_str(), the_full_path.length());
+								//strcpy(cwd2, cwd);
+								strcpy(cwd2, the_full_path.c_str());
+								delete [] cwd;
+								path_cd = cwd2;
 							}
-							delete [] cwd;
-							path_cd = cwd2;
 						}
 						else {
 //							cout << "b" << endl;
 							path_cd = cwd;
 						}
 					}
-/*					else if ((*temp_it) == "..") {
-						cout << "c" << endl;
-						for (unsigned i = 0; cwd[i] != '\0'; ++i) {
-							if (cwd[i] == '/') {
-								slashindex = i;
-							}
-						}
-						for (unsigned i = 0; i < slashindex; ++i) {
-							cwd2[i] = cwd[i];
-						}
-						delete [] cwd;
-						path_cd = cwd2;
-					}
-*/					
+					
 					else {
 //						cout << "d" << endl;
 						char* the_full_path2 = new char[1024];
@@ -216,10 +221,10 @@ int main() {
 						}
 						string the_full_path = the_full_path2;
 						delete [] the_full_path2;
-						char temp[the_full_path.length() + 1];
-						memcpy(temp, the_full_path.c_str(), the_full_path.length());
-						strcpy(cwd2, cwd);
-						strcpy(cwd2, temp);
+						//char* temp = new char[the_full_path.length() + 1];
+						//memcpy(temp, the_full_path.c_str(), the_full_path.length());
+						//strcpy(cwd2, cwd);
+						strcpy(cwd2, the_full_path.c_str());
 						delete [] cwd;
 						path_cd = cwd2;
 					}
@@ -250,57 +255,10 @@ int main() {
 					TOKEN::iterator it2 = tok2.begin();
 //					TOKEN::iterator temp_it2 = tok2.begin();
 					if ((*it2) == "exit") {
-						cout << "2" << endl;
+//						cout << "2" << endl;
 						exit(1);
 					}
-/*					if ((*it2) == "cd") {
-				//		cout << "right here" << endl;
-						char* path_cd = new char[1024];	
-						char* cwd = new char[1024];
-						char* cwd2 = new char[1024];
-						unsigned slashindex;
-						if (getcwd(cwd, 1024) == NULL) {
-							perror("getcwd");
-						}
-						++temp_it2;
-						if (temp_it2 == tok2.end()) {
-							cwd2 = getenv("HOME");
-							delete [] cwd;
-							path_cd = cwd2;
-						}
-						else if ((*temp_it2) == ".") {
-							path_cd = cwd;
-						}
-						else if ((*temp_it2) == "..") {
-							for (unsigned i = 0; cwd[i] != '\0'; ++i) {
-								if (cwd[i] == '/') {
-									slashindex = i;
-								}
-							}
-							for (unsigned i = 0; i < slashindex; ++i) {
-								cwd2[i] = cwd[i];
-							}
-							delete [] cwd;
-							path_cd = cwd2;
-						}
-						else {
-							string the_full_path = (*temp_it2);
-							char temp[the_full_path.length() + 1];
-							memcpy(temp, the_full_path.c_str(), the_full_path.length());
-
-							strcpy(cwd2, cwd);
-							strcpy(cwd2, temp);
-							delete [] cwd;
-							path_cd = cwd2;
-						}
-
-						if (-1 == chdir(path_cd)) {
-							perror("chdir");
-						}
-						cd_break++;
-						//break;
-					}
-	*/				
+				
 					if (cd_break > 0) {
 						exit(1);
 					}
@@ -339,7 +297,7 @@ int main() {
 				else if (pid != 0) {
 	//				cout << "status of pid : " << pid << endl;
 	//				cout << "status before wait: " << WEXITSTATUS(status) << endl;
-					cout << "before the parent." << endl;
+//					cout << "before the parent." << endl;
 					if (-1 == wait(&status)) {
 						perror("child old rshell");
 						exit(1);
@@ -348,7 +306,7 @@ int main() {
 						cd_break = 0;	
 					}
 
-					cout << "after the wait." << endl;
+//					cout << "after the wait." << endl;
 					if (WEXITSTATUS(status) != 0 && and_flag > 0) {
 						break;
 					}
@@ -614,9 +572,6 @@ int main() {
 							}
 						}
 					}//parent branch of first fork
-
-
-
 				}//if pipes are up
 			}//first tokenizer
 		}//new rshell branch		
