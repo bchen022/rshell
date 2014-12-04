@@ -28,7 +28,7 @@ as the name of the machine the user is logged into, followed by the
 command prompt '$'. The rshell then takes in commands from the user,
 being able to execute the commands that a normal shell would
 be able to execute. It is able to accept multiple commands at once as well
-as being able to accept piping and io redirection.
+as being able to accept piping and io redirection. Rshell can also handle cd for the most part.
 
 However, there are bugs in this program:
 
@@ -59,6 +59,10 @@ However, there are bugs in this program:
 13) If the command is an input redirection but the user does not provide a file, the whole shell will exit instead of reprompting the user.
 
 14) Parts of the text in the file that receives the output redirection may randomly be placed into the directory.
+
+15) Input redirection does not work (will be fixed on my own time). 
+
+16) cd command will only work if its the only command in the command line (e.g. cannot work along with piping).
 
 ======================================================================
 Summary (ls)
