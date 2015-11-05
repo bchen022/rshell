@@ -1,29 +1,8 @@
-How to run file
----------------
-Depending on the Operating System, OS X vs Unix, program is compiled with the `#include <wait.h>` library.
-
-OS X will not compile but will need the removal of the `#include <wait.h>` library call. 
-
-For full feature, please add current path to the rshell directory to your $PATH. This will enable you to use the ls features made in my personal ls shell.
-
-Once you have cloned the directory to your local machine, follow the directions below:
---------------------------------------------------------------------------------------
-1. `cd` into `rshell` directory
-
-2. Call `make`
-
-3. `cd` into `bin`
-
-4. Call `rshell`
-
-5. Can do steps 3 & 4 by calling `bin/rshell`
-
-RShell will now open up instead of BASH and you can execute almost all to nothing commands as included in the regular terminal.
 ======================================================================
 Summary (rshell)
 ======================================================================
 This project is a c++ implementation of a basic command shell, which 
-we called "rshell". It displays the currently logged in user as well
+I have called "rshell". It displays the currently logged in user as well
 as the name of the machine the user is logged into, followed by the 
 command prompt '$'. The rshell then takes in commands from the user,
 being able to execute the commands that a normal shell would
@@ -85,7 +64,29 @@ However, this program has bugs:
 
 6) With the -R flag, some display of paths will have an extra '/'.
 
+------------------------------------------------------------------------------------
 
+How to run file
+---------------
+Depending on the Operating System, OSX vs Unix, program is compiled with the `#include <wait.h>` library.
+
+OSX will not compile but will need the removal of the `#include <wait.h>` library call. 
+
+For full features, please add current path to the rshell directory to your $PATH. This will enable you to use the ls features made in my personal ls shell.
+
+Once you have cloned the directory to your local machine, follow the directions below:
+--------------------------------------------------------------------------------------
+1. `cd` into `rshell` directory
+
+2. Call `make`
+
+3. `cd` into `bin`
+
+4. Call `rshell`
+
+5. Can do steps 3 & 4 by calling `bin/rshell`
+
+RShell will now open up instead of BASH and you can execute almost all the commands a regular shell would have in a regular terminal.
 
 
 
