@@ -1,8 +1,6 @@
-======================================================================
-Summary (rshell)
-======================================================================
-This project is a c++ implementation of a basic command shell, which 
-I have called "rshell". It displays the currently logged in user as well
+# rshell
+
+This project is a c++ implementation of a basic command shell. It displays the currently logged in user as well
 as the name of the machine the user is logged into, followed by the 
 command prompt '$'. The rshell then takes in commands from the user,
 being able to execute the commands that a normal shell would
@@ -43,10 +41,9 @@ However, there are bugs in this program:
 
 16) cd command will only work if its the only command in the command line (e.g. cannot work along with piping).
 
-======================================================================
-Summary (ls)
-======================================================================
-This project is a c++ partial implementation of the bash command "ls". After running the program, the user shall enter the command ls, followed by either the -a, -l, -R flags, a combination of any of the flags, paths, files, or any combinations of these parameters. The ls command shall display the files and directories available, depending on what parameters are passed in, including their information such as permissions and modification times which also depend on what flags are passed in with the ls command.
+## ls
+
+This project includes a c++ partial implementation of the bash command "ls". After running the program, the user shall enter the command ls, followed by either the -a, -l, -R flags, a combination of any of the flags, paths, files, or any combinations of these parameters. The ls command shall display the files and directories available, depending on what parameters are passed in, including their information such as permissions and modification times which also depend on what flags are passed in with the ls command.
 
 To run, type in the command line: bin/ls followed by ls, and a combination of the available parameters listed above.
 
@@ -64,18 +61,16 @@ However, this program has bugs:
 
 6) With the -R flag, some display of paths will have an extra '/'.
 
-------------------------------------------------------------------------------------
+## How to run file
 
-How to run file
----------------
 Depending on the Operating System, OSX vs Unix, program is compiled with the `#include <wait.h>` library.
 
 OSX will not compile but will need the removal of the `#include <wait.h>` library call. 
 
 For full features, please add current path to the rshell directory to your $PATH. This will enable you to use the ls features made in my personal ls shell.
 
-Once you have cloned the directory to your local machine, follow the directions below:
---------------------------------------------------------------------------------------
+### Once you have cloned the directory to your local machine, follow the directions below:
+
 1. `cd` into `rshell` directory
 
 2. Call `make`
@@ -87,17 +82,3 @@ Once you have cloned the directory to your local machine, follow the directions 
 5. Can do steps 3 & 4 by calling `bin/rshell`
 
 RShell will now open up instead of BASH and you can execute almost all the commands a regular shell would have in a regular terminal.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
